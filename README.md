@@ -5,9 +5,9 @@ standards, AI-agent instructions, CI/CD, and scaffolding that every client
 project inherits.
 
 Independent client repos pin a versioned release of this repo and pull updates
-on their own cadence. See the design at
-[`docs/superpowers/specs/2026-06-09-lattice-machine-design.md`](../docs/superpowers/specs/2026-06-09-lattice-machine-design.md)
-(in the parent `Lattice/` folder).
+on their own cadence. The full design lives outside this repo at
+`Lattice/docs/superpowers/specs/2026-06-09-lattice-machine-design.md` (the
+parent `Lattice/` folder is not itself a git repo).
 
 ## Layout
 

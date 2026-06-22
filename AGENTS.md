@@ -6,8 +6,8 @@ This repo is the portable core + Lattice stack + CI + scaffolding that client
 projects inherit. Changes here ripple to every project, so:
 
 - **Treat every change as a standards change.** Land it via a focused commit
-  with a clear *why*. Material changes get an ADR (see `templates/ADR.md` once
-  it exists) and a `VERSION` bump.
+  with a clear *why*. Material changes get an ADR (see `templates/ADR.md`)
+  and a `VERSION` bump.
 - **Keep the portable core stack-agnostic.** Anything TypeScript/Supabase/
   Vercel-specific belongs in `stack/`, never in `core/`.
 - **Lint before commit:** `npm run lint:md`.
