@@ -1,0 +1,24 @@
+name: Lattice standards check
+description: Install dependencies and run lattice check, lint, and tests.
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24
+    - name: Install dependencies
+      run: npm ci
+      shell: bash
+    - name: Verify standard is current
+      run: npx lattice check
+      shell: bash
+    - name: Lint markdown
+      run: npm run lint:md --if-present
+      shell: bash
+    - name: Lint
+      run: npm run lint --if-present
+      shell: bash
+    - name: Test
+      run: npm test --if-present
+      shell: bash

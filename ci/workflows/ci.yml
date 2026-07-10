@@ -1,0 +1,16 @@
+# Template CI workflow. Copy to .github/workflows/ci.yml in your project.
+# `lattice init` drops this in automatically for greenfield projects and pins
+# the action to the standard version.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  standards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lattice-partners/standards/ci/actions/standards-check@main

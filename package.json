@@ -1,11 +1,26 @@
 {
   "name": "@lattice/standards",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "description": "The paved road for Lattice consulting projects: shared engineering standards, AI-agent instructions, CI/CD, and scaffolding.",
   "type": "module",
+  "bin": {
+    "lattice": "cli/index.js"
+  },
+  "files": [
+    "cli",
+    "core",
+    "stack",
+    "ci",
+    "templates",
+    "VERSION"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\""
+    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
+    "test": "node cli/test.js"
   },
   "devDependencies": {
     "markdownlint-cli2": "^0.18.1"
