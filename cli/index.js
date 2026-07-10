@@ -6,7 +6,7 @@ import { parseArgs } from 'node:util'
 import { init, adopt, sync, check } from './commands.js'
 import { standardsVersion } from './lib.js'
 import * as ui from './ui.js'
-import { select, Cancelled } from './prompts.js'
+import { shell } from './shell.js'
 
 const commands = { init, adopt, sync, check }
 
@@ -55,28 +55,19 @@ async function main() {
     return 0
   }
 
-  let chosen = command
-  if (!chosen) {
+  if (!command) {
+    if (ui.interactive) {
+      await shell(dir)
+      return 0
+    }
     ui.banner(standardsVersion())
-    if (!ui.interactive) {
-      help()
-      return 1
-    }
-    try {
-      chosen = await select(
-        'What would you like to do?',
-        COMMAND_HELP.map(([c, d]) => ({ label: c.split(' ')[0], value: c.split(' ')[0], hint: d })),
-      )
-      console.log('')
-    } catch (err) {
-      if (err instanceof Cancelled) return 1
-      throw err
-    }
+    help()
+    return 1
   }
 
-  const run = commands[chosen]
+  const run = commands[command]
   if (!run) {
-    ui.step.err(`unknown command: ${chosen}`)
+    ui.step.err(`unknown command: ${command}`)
     help()
     return 1
   }

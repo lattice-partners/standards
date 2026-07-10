@@ -7,7 +7,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import { join } from 'node:path'
 import { init, adopt, sync, check } from './commands.js'
-import { standardsVersion, VENDOR_DIR } from './lib.js'
+import { standardsVersion, status, VENDOR_DIR } from './lib.js'
 
 const version = standardsVersion()
 const root = fs.mkdtempSync(join(os.tmpdir(), 'lattice-cli-'))
@@ -102,6 +102,19 @@ await step('adopt is idempotent (single Lattice block)', async () => {
   await adopt({ dir: d })
   const out = fs.readFileSync(join(d, 'AGENTS.md'), 'utf8')
   assert.equal(out.match(/<!-- lattice:standards -->/g).length, 1)
+})
+
+// status reflects init, version, and drift (drives the interactive shell home)
+await step('status reports initialized, version, and drift', async () => {
+  const d = tmp('status')
+  assert.equal(status(d).initialized, false)
+  await init({ dir: d, name: 'st' })
+  const st = status(d)
+  assert.equal(st.initialized, true)
+  assert.equal(st.vendored, version)
+  assert.equal(st.drift, 'none')
+  fs.appendFileSync(join(d, VENDOR_DIR, 'agents-base.md'), '\nedit\n')
+  assert.equal(status(d).drift, 'edited')
 })
 
 fs.rmSync(root, { recursive: true, force: true })

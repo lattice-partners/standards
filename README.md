@@ -38,9 +38,9 @@ New (greenfield) project:
 ```bash
 # scaffold: writes AGENTS.md, symlinks CLAUDE.md, vendors core/ into .lattice/,
 # seeds memory/
-npx github:lattice-partners/standards#v0.3.0 init my-app
+npx github:lattice-partners/standards#v0.4.0 init my-app
 cd my-app
-npm i -D github:lattice-partners/standards#v0.3.0
+npm i -D github:lattice-partners/standards#v0.4.0
 ```
 
 Existing (client) repo:
@@ -48,8 +48,8 @@ Existing (client) repo:
 ```bash
 # non-destructive overlay: injects a marked Lattice block into AGENTS.md,
 # leaves the rest of the repo alone
-npx github:lattice-partners/standards#v0.3.0 adopt .
-npm i -D github:lattice-partners/standards#v0.3.0
+npx github:lattice-partners/standards#v0.4.0 adopt .
+npm i -D github:lattice-partners/standards#v0.4.0
 ```
 
 Once installed as a dev dependency:
@@ -59,9 +59,12 @@ npx lattice sync     # re-vendor .lattice/ to the installed version, bump the pi
 npx lattice check    # verify the project conforms (exit non-zero on drift; use in CI)
 ```
 
-Run `lattice` with no command on a terminal for an interactive menu; `init` and
-`adopt` prompt for anything not passed as a flag, so they are fully scriptable
-in CI (no TTY means no prompts). Set `NO_COLOR` to disable color or
+Run `lattice` with no command on a terminal to open the interactive shell: a
+home screen showing the repo's standards status (initialized, version, drift)
+and a context-aware menu you work through, returning home after each action
+until you quit. `init` and `adopt` also prompt for anything not passed as a
+flag. All of this is TTY-only, so subcommands stay fully scriptable in CI and
+for coding agents (no TTY means no prompts). Set `NO_COLOR` to disable color or
 `LATTICE_ASCII=1` for plain ASCII glyphs.
 
 `.lattice/` is managed by the CLI. Edit the standard here in lattice-standards,
@@ -69,7 +72,7 @@ tag a release, then `sync` each project to it. Do not hand-edit `.lattice/`.
 
 ## Status
 
-Phase 0 (portable core), the CLI (init/adopt/sync/check), stack configs
-(ESLint, Prettier), CI (composite action + workflow), and the greenfield
-template are all in place at v0.3.0. Next: brownfield stack adoption and richer
-templates - see the design doc roadmap.
+Phase 0 (portable core), the CLI (init/adopt/sync/check plus an interactive
+shell), stack configs (ESLint, Prettier), CI (composite action + workflow), and
+the greenfield template are all in place at v0.4.0. Next: brownfield stack
+adoption and richer templates - see the design doc roadmap.

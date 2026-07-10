@@ -69,6 +69,25 @@ export function docDiffers(target, file) {
   return fs.readFileSync(vp, 'utf8') !== fs.readFileSync(join(coreDir(), file), 'utf8')
 }
 
+/**
+ * Summarize a project's standards state for the interactive shell.
+ * drift is one of: 'none', 'behind' (stale version), 'edited' (local changes),
+ * or null when the project is not initialized.
+ */
+export function status(target) {
+  const initialized = fs.existsSync(join(target, VENDOR_DIR))
+  const installed = standardsVersion()
+  const vendored = vendoredVersion(target)
+  const agentsPath = join(target, 'AGENTS.md')
+  const posture = fs.existsSync(agentsPath) ? readPosture(fs.readFileSync(agentsPath, 'utf8')) : null
+  let drift = null
+  if (initialized) {
+    if (vendored !== installed) drift = 'behind'
+    else drift = standardDocs().some((f) => docDiffers(target, f)) ? 'edited' : 'none'
+  }
+  return { initialized, installed, vendored, posture, drift }
+}
+
 /** Seed a project's memory/ from the template, unless one already exists. */
 export function seedMemory(target) {
   const src = join(coreDir(), 'memory-template')

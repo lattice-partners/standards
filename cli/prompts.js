@@ -73,7 +73,7 @@ export function select(question, options) {
       } else if (key.name === 'return') {
         cleanup()
         resolve(options[idx].value)
-      } else if (key.name === 'escape' || (key.ctrl && key.name === 'c')) {
+      } else if (key.name === 'escape' || key.name === 'q' || (key.ctrl && key.name === 'c')) {
         cleanup()
         reject(new Cancelled())
       }
