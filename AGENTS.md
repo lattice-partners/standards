@@ -16,9 +16,9 @@ projects inherit. Changes here ripple to every project, so:
 
 The engineering standard lives in `core/`:
 
-- `core/agents-base.md` — base engineering standard projects compose from
-- `core/working-agreement.md` — posture, rituals, commit discipline, DoD
-- `core/security-baseline.md` — non-negotiable security rules
-- `core/memory-template/` — seed memory files for a new project
+- `core/agents-base.md` - base engineering standard projects compose from
+- `core/working-agreement.md` - posture, rituals, commit discipline, DoD
+- `core/security-baseline.md` - non-negotiable security rules
+- `core/memory-template/` - seed memory files for a new project
 
 These also govern work in this repo.

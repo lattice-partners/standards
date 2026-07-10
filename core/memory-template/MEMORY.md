@@ -1,4 +1,4 @@
-# Memory — <Project>
+# Memory - <Project>
 
 > Single source of truth for decisions and stage. Keep under 200 lines.
 > Planning docs live in `docs/`; this references them, never duplicates.
@@ -9,7 +9,7 @@
 
 ## Confirmed decisions
 
-- <decision> — <one-line why>
+- <decision> - <one-line why>
 
 ## Pending decisions
 

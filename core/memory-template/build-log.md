@@ -1,4 +1,4 @@
-# Build Log — <Project>
+# Build Log - <Project>
 
 Session history: what was done, what was decided, current state.
 Newest entries on top.

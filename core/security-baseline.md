@@ -11,7 +11,7 @@ implementation, explain the implications, get explicit approval.
 - **Rate-limit all public endpoints.**
 - **Least privilege** for every component and credential.
 - **Never log** passwords, tokens, keys, PII, or financial data.
-- **Secrets in env vars** — never hardcoded, never committed. **HTTPS only.**
+- **Secrets in env vars** - never hardcoded, never committed. **HTTPS only.**
 
 For financial / high-stakes platforms, add platform-specific rules in the
 project's `AGENTS.md`.

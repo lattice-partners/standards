@@ -1,4 +1,4 @@
-# Project Details — <Project>
+# Project Details - <Project>
 
 ## Mission
 
