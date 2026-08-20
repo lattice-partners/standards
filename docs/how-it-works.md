@@ -20,12 +20,33 @@ The design note behind this lives outside the repo at
   `working-agreement.md` (posture, rituals, definition of done),
   `security-baseline.md`, and `memory-template/` (seed files for a project's
   `memory/`).
-- **Lattice stack (`stack/`)** - the opinionated TypeScript stack: shared ESLint
-  and Prettier config. Applied fully on greenfield; used selectively when we are
-  guests in a client's repo.
+- **Lattice stack (`stack/`)** - the opinionated stack: `stack-baseline.md` (the
+  enforceable rules), shared ESLint and Prettier config, and setup guides for
+  Next.js, Supabase, Clerk, and Vercel. Applied fully on greenfield; used
+  selectively when we are guests in a client's repo.
 
 The split matters because brownfield work adopts the core standard but must not
 impose our tooling on a client's existing codebase.
+
+### What gets vendored, and why it matters
+
+Only files copied into a project's `.lattice/` reach the agents working in that
+repo, and only those files are updated by `sync` and policed by `check`.
+Anything left behind in the installed package sits in `node_modules/` where
+nothing reads it.
+
+So the split is not just core versus stack, it is vendored versus not:
+
+| Vendored into `.lattice/` | Stays in the package |
+| --- | --- |
+| `core/*.md` | `stack/*/README.md` setup guides |
+| `stack/stack-baseline.md` (stack projects only) | `templates/` |
+| `hooks/*` | `ci/` |
+
+That is why the enforceable stack rules live in a single `stack-baseline.md`
+rather than spread across the per-service guides, and why the hooks are vendored
+rather than installed from a dependency: a hook improvement made here propagates
+through `sync` exactly like a rule change.
 
 ## Distribution: npm from a git tag
 
@@ -33,7 +54,7 @@ There is no registry publish. A project pins the standard by installing straight
 from the GitHub tag:
 
 ```bash
-npm i -D github:lattice-partners/standards#v0.4.0
+npm i -D github:lattice-partners/standards#v0.5.0
 ```
 
 npm handles the pinning. When the CLI runs, it copies the `core/` docs bundled
@@ -60,7 +81,7 @@ my-app/
 
 ```markdown
 <!-- lattice:standards -->
-Standards: lattice-standards@0.4.0  (vendored in .lattice/)
+Standards: lattice-standards@0.5.0  (vendored in .lattice/)
 Engagement posture: greenfield
 
 Read the vendored standard before working here:
@@ -77,20 +98,93 @@ The `CLAUDE.md` symlink means Claude Code and other AGENTS.md-aware tools (Codex
 Cursor) read the exact same instructions: one file on disk, two names, zero
 drift.
 
-## The four commands
+## The commands
+
+Setting up and staying current:
 
 - **`init`** - greenfield scaffold: writes `AGENTS.md`, symlinks `CLAUDE.md`,
-  vendors `core/` into `.lattice/`, seeds `memory/`, and lays down stack config
-  (tsconfig, eslint/prettier re-exports, gitignore) plus a CI workflow pinned to
-  the version.
+  vendors `core/` into `.lattice/`, seeds `memory/`, lays down the chosen
+  scaffold (`next-monorepo` by default, or `--stack=minimal` for config only),
+  vendors the hooks and switches them on, and drops a version-pinned CI
+  workflow.
 - **`adopt`** - brownfield overlay, non-destructive: injects the block into an
   existing `AGENTS.md` (or creates a minimal one) and vendors `.lattice/`. No
-  stack config is imposed.
-- **`sync`** - re-vendors `.lattice/` to the installed version and rewrites the
-  pin in `AGENTS.md`. This is the "pull the update" step.
-- **`check`** - verifies conformance (vendored version matches installed, no
-  local drift in `.lattice/`, the `AGENTS.md` pin is correct, `CLAUDE.md`
-  exists) and exits non-zero on any problem.
+  stack config, no scaffold, and no hooks are imposed.
+- **`sync`** - re-vendors `.lattice/` (docs, stack baseline, and hooks) to the
+  installed version and rewrites the pin in `AGENTS.md`.
+- **`check`** - verifies conformance and exits non-zero on any problem: version
+  matches, no local drift in `.lattice/`, the `AGENTS.md` pin is correct,
+  `CLAUDE.md` exists, and the hooks are both intact and switched on.
+
+Day to day:
+
+- **`ticket <ID>`** - fetch and branch from `origin/dev`, named after the ticket.
+- **`release`** - print the `dev` into `main` pull request body.
+- **`doctor`** - check this machine: Node version, git identity, hooks, missing
+  dependencies, local settings file.
+- **`verify`** - run every check and answer "is this safe to ship?" in plain
+  language.
+- **`hooks install`** - point git at the vendored hooks. Refuses to take over an
+  existing `core.hooksPath`, so a client repo already on Husky keeps its own.
+
+## Enforcement happens before the commit
+
+The gate is the vendored pre-commit hook, not CI (ADR-0007). `core.hooksPath`
+points at `.lattice/hooks/`, and a `prepare` script in the scaffold installs it
+on `npm install`, so a new clone is covered as soon as dependencies are.
+
+Before every commit it checks, in order: the branch is a ticket branch; no
+secret or `.env` file is staged; nothing puts a secret in a `NEXT_PUBLIC_`
+variable; no migration drops data or disables RLS without an explicit approval
+marker; formatting; lint; then types and tests through Turborepo, filtered to
+the packages that actually changed.
+
+Two of those exist because they are invisible in review. A secret in a
+`NEXT_PUBLIC_` variable is inlined into the client bundle and readable by every
+visitor. A migration that disables RLS makes a permission error disappear, which
+is exactly why an agent reaches for it when stuck.
+
+CI still runs, on pushes to `main` and `dev` and on release tags, as the
+backstop.
+
+## How work flows
+
+```text
+lattice ticket MIN-155      branch MIN-155, cut from origin/dev
+        |
+        v  pull request into dev, body left empty
+      dev                   ticket -> In Review, deploys to staging
+        |
+        v  pull request into main, body from lattice release
+     main                   tickets close, production after manual promotion
+```
+
+The branch name is the link. The tracker integration reads the branch name, the
+pull request title, and the pull request description, but never commit messages,
+so the empty `dev` pull request body works only because the branch is named
+`MIN-155`. A branch named `fix-login` links to nothing and the ticket silently
+never moves, which is why the hook rejects it rather than the style guide
+mentioning it.
+
+Three things have to be set up in the tracker itself and cannot be enforced from
+the repo: connect its GitHub integration, set the branch format to the bare
+issue identifier, and configure branch rules so merging into `dev` sets In
+Review and merging into `main` sets Done.
+
+## Guardrails for agents
+
+`init` also writes `.claude/settings.json`, which constrains any Claude Code
+agent working in the project: the irreversible commands (`supabase db reset`,
+`vercel --prod`, `git push --force`) are denied outright rather than prompted,
+`disableBypassPermissionsMode` stops anyone switching prompts off, and
+`attribution.commit` is cleared so no AI attribution trailer is generated in the
+first place.
+
+`core/agent-safety.md` is vendored alongside it and covers what the settings
+file cannot: never disable RLS or reach for the secret key to clear a permission
+error, never delete a failing test, never use `--no-verify`. Every rule there
+describes something that makes an error go away, which is precisely why it is
+tempting.
 
 ## Two faces: humans and agents
 
@@ -127,7 +221,7 @@ drifted from the version it pinned.
 Projects can also reference the action directly:
 
 ```yaml
-- uses: lattice-partners/standards/ci/actions/standards-check@v0.4.0
+- uses: lattice-partners/standards/ci/actions/standards-check@v0.5.0
 ```
 
 ## CLI internals
@@ -137,7 +231,10 @@ Zero runtime dependencies. Everything is Node built-ins.
 | File | Responsibility |
 |---|---|
 | `cli/index.js` | Entry point: parse args, dispatch, or launch the shell |
-| `cli/commands.js` | The four commands (`init`, `adopt`, `sync`, `check`) |
+| `cli/commands.js` | `init`, `adopt`, `sync`, `check`, `hooks install` |
+| `cli/workflow.js` | `ticket`, `release`, `doctor`, `verify` |
+| `cli/hooks.js` | The hook bodies: the pre-commit gate and commit-msg rules |
+| `cli/git.js` | Thin wrappers over the git CLI |
 | `cli/lib.js` | Vendoring, `AGENTS.md` generation, and `status()` |
 | `cli/ui.js` | Terminal toolkit: color, the hand logo, spinner, box |
 | `cli/prompts.js` | Interactive text and arrow-key select |
@@ -151,5 +248,12 @@ forces plain ASCII glyphs.
 
 Material changes get an ADR (`docs/adr/`) and a `VERSION` bump. The records so
 far: Conventional Commits (0001), no em dashes or emojis (0002), concise commit
-messages (0003), the CLI and scaffolding (0004), and the interactive shell
-(0005). `CLAUDE.md` holds the working rules for changing this repo.
+messages (0003), the CLI and scaffolding (0004), the interactive shell (0005),
+the Lattice stack (0006), local-first enforcement and agent guardrails (0007),
+and the branching and ticket workflow (0008). `CLAUDE.md` holds the working
+rules for changing this repo.
+
+ADR-0007 also records three risks accepted deliberately rather than solved:
+agents hold production credentials, `main` takes direct commits, and there is no
+error tracking or spend cap. Each has a stated mitigation. They are written down
+so the next person does not mistake them for oversights.
