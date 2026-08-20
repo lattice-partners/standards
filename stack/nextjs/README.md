@@ -134,12 +134,19 @@ than calling the API origin from the browser (which means CORS and a second
 cookie domain), `apps/web` rewrites `/api/*` to `apps/api`.
 
 ```ts
+import { fileURLToPath } from 'node:url'
+import { loadEnvConfig } from '@next/env'
 import type { NextConfig } from 'next'
+
+// One .env.local at the monorepo root feeds both apps. Next only looks for
+// .env* inside the app directory, so point it at the root explicitly.
+const monorepoRoot = fileURLToPath(new URL('../../', import.meta.url))
+loadEnvConfig(monorepoRoot, process.env.NODE_ENV === 'development', console, true)
 
 const apiUrl = process.env.API_URL
 
 if (!apiUrl) {
-  throw new Error('API_URL is not set. Set it in Vercel and in .env.local.')
+  throw new Error('API_URL is not set. Set it in Vercel and in .env.local at the repo root.')
 }
 
 const nextConfig: NextConfig = {

@@ -11,9 +11,10 @@ import os from 'node:os'
 import { join } from 'node:path'
 import { init, adopt, sync, check, hooks } from './commands.js'
 import { preCommit, commitMsg } from './hooks.js'
-import { ticket, releaseBody } from './workflow.js'
+import { ticket, releaseBody, setEnvLocalValue, envKeyHint, emptyEnvKeys } from './workflow.js'
+import { setup, normalizeRemoteUrl } from './setup.js'
 import { standardsVersion, status, VENDOR_DIR, HOOKS_PATH } from './lib.js'
-import { git, configGet } from './git.js'
+import { git, configGet, refExists } from './git.js'
 
 const version = standardsVersion()
 const root = fs.mkdtempSync(join(os.tmpdir(), 'lattice-cli-'))
@@ -98,7 +99,7 @@ await step('init defaults to the next-monorepo scaffold', async () => {
     assert.ok(fs.existsSync(join(d, f)), `missing ${f}`)
   }
   const pkg = JSON.parse(fs.readFileSync(join(d, 'package.json'), 'utf8'))
-  assert.deepEqual(pkg.workspaces, ['apps/*'])
+  assert.deepEqual(pkg.workspaces, ['apps/*', 'packages/*'])
   // {{PROJECT_NAME}} and {{STANDARDS_VERSION}} must both be substituted.
   assert.equal(pkg.name, 'acme')
   assert.equal(JSON.stringify(pkg).includes('{{'), false, 'unsubstituted template var')
@@ -162,6 +163,8 @@ await step('sync propagates an edited stack baseline', async () => {
 
 await step('check and sync cover vendored hooks', async () => {
   const d = repo('hookdrift')
+  git(['config', '--local', 'user.email', 'test@example.com'], d)
+  git(['config', '--local', 'user.name', 'Test'], d)
   await init({ dir: d, name: 'hd' })
   assert.ok(fs.existsSync(join(d, HOOKS_PATH, 'pre-commit')), 'hooks not vendored')
   assert.equal(configGet('core.hooksPath', d), HOOKS_PATH)
@@ -174,6 +177,8 @@ await step('check and sync cover vendored hooks', async () => {
 
 await step('check fails when hooks are vendored but not switched on', async () => {
   const d = repo('hookoff')
+  git(['config', '--local', 'user.email', 'test@example.com'], d)
+  git(['config', '--local', 'user.name', 'Test'], d)
   await init({ dir: d, name: 'ho' })
   git(['config', '--unset', 'core.hooksPath'], d)
   assert.equal(check({ dir: d }), 1)
@@ -183,8 +188,39 @@ await step('hooks install refuses to clobber an existing hooksPath', async () =>
   const d = repo('husky')
   await adopt({ dir: d })
   git(['config', '--local', 'core.hooksPath', '.husky'], d)
-  assert.equal(hooks({ dir: d }), 1)
+  assert.equal(hooks({ dir: d }), 0)
   assert.equal(configGet('core.hooksPath', d), '.husky')
+})
+
+await step('hooks install succeeds when target is not a git repo', async () => {
+  const d = tmp('nohooksrepo')
+  await init({ dir: d, name: 'nhr' })
+  assert.equal(hooks({ dir: d }), 0)
+})
+
+await step('init creates a git repo with main, dev, hooks, and .env.local', async () => {
+  const d = repo('boot')
+  git(['config', '--local', 'user.email', 'test@example.com'], d)
+  git(['config', '--local', 'user.name', 'Test'], d)
+  await init({ dir: d, name: 'boot' })
+  assert.equal(git(['rev-parse', '--abbrev-ref', 'HEAD'], d), 'main')
+  assert.ok(refExists('dev', d))
+  assert.equal(configGet('core.hooksPath', d), HOOKS_PATH)
+  assert.ok(fs.existsSync(join(d, '.env.local')))
+  assert.equal(git(['ls-files', '.env.local'], d), '')
+  assert.equal(git(['rev-list', '--count', 'HEAD'], d), '1')
+})
+
+await step('git() scrubs inherited git environment variables', () => {
+  const d = repo('gitenv')
+  write(d, 'probe.txt', 'x\n')
+  git(['add', 'probe.txt'], d)
+  git(['commit', '-m', 'chore: probe'], d)
+  process.env.GIT_INDEX_FILE = '.git/index'
+  process.env.GIT_DIR = '/tmp/bogus'
+  assert.equal(fs.realpathSync(git(['rev-parse', '--show-toplevel'], d)), fs.realpathSync(d))
+  delete process.env.GIT_INDEX_FILE
+  delete process.env.GIT_DIR
 })
 
 await step('adopt is non-destructive on an existing AGENTS.md', async () => {
@@ -378,6 +414,41 @@ await step('commit-msg allows merge and revert commits', () => {
 })
 
 // --- ticket and release ----------------------------------------------------
+
+await step('setup refuses a non-interactive terminal', async () => {
+  const d = tmp('nosetup')
+  await init({ dir: d, name: 'ns' })
+  assert.equal(await setup({ dir: d }), 1)
+})
+
+await step('setup refuses an uninitialized directory', async () => {
+  assert.equal(await setup({ dir: tmp('raw') }), 1)
+})
+
+await step('normalizeRemoteUrl accepts common GitHub paste shapes', () => {
+  assert.equal(normalizeRemoteUrl('git@github.com:acme/app.git'), 'git@github.com:acme/app.git')
+  assert.equal(normalizeRemoteUrl('https://github.com/acme/app'), 'git@github.com:acme/app.git')
+  assert.equal(normalizeRemoteUrl('github.com/acme/app'), 'git@github.com:acme/app.git')
+  assert.equal(normalizeRemoteUrl('not a url'), null)
+})
+
+await step('setEnvLocalValue updates a key in place', () => {
+  const out = setEnvLocalValue('API_URL=\nFOO=bar\n', 'API_URL', 'http://localhost:3001')
+  assert.match(out, /^API_URL=http:\/\/localhost:3001/m)
+  assert.match(out, /FOO=bar/)
+})
+
+await step('envKeyHint reads comments above a key', () => {
+  const ex = '# Origin of the api app.\nAPI_URL=\n'
+  assert.match(envKeyHint(ex, 'API_URL'), /Origin of the api app/)
+})
+
+await step('emptyEnvKeys lists keys still blank in .env.local', async () => {
+  const d = tmp('emptyenv')
+  write(d, '.env.example', 'API_URL=\nFOO=\n')
+  write(d, '.env.local', 'API_URL=http://localhost:3001\nFOO=\n')
+  assert.deepEqual(emptyEnvKeys(d), ['FOO'])
+})
 
 await step('ticket branches from dev', () => {
   const d = repo('ticket')

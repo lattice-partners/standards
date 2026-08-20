@@ -27,7 +27,7 @@ point: a key that is never pasted is never pasted into the wrong project.
 Pull the values down for local work:
 
 ```bash
-vercel env pull apps/web/.env.local
+vercel env pull .env.local
 ```
 
 Run `vercel integration add clerk` for `apps/api` as well, or copy the same two

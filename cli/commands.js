@@ -36,8 +36,8 @@ import {
   basename,
 } from './lib.js'
 import * as ui from './ui.js'
-import { text, select, Cancelled } from './prompts.js'
-import { isRepo, configGet, configSet } from './git.js'
+import { text, select, confirm, Cancelled } from './prompts.js'
+import { isRepo, configGet, configSet, initRepo, commitAll, createBranch } from './git.js'
 
 const POSTURE_CHOICES = [
   { label: 'Greenfield', value: 'greenfield', hint: 'Lattice owns the stack' },
@@ -113,14 +113,28 @@ export async function init(opts = {}) {
   if (chosenStack) {
     const files = scaffoldStack(target, chosenStack, { PROJECT_NAME: projectName })
     if (files.length) ui.step.ok(`scaffolded ${files.length} files (${chosenStack})`)
-    installHooks(target, { quiet: false })
+  }
+
+  if (post === 'greenfield') bootstrapRepo(target, version)
+
+  if (ui.interactive && post === 'greenfield') {
+    console.log('')
+    try {
+      if (await confirm('Run the setup wizard now?', true)) {
+        const { setup } = await import('./setup.js')
+        return setup({ dir: target })
+      }
+    } catch (err) {
+      if (err instanceof Cancelled) return cancel()
+      throw err
+    }
   }
 
   ui.box(`lattice-standards@${version}  ${ui.S.dot}  ${projectName}`, [
     ui.bold('Next steps'),
     `${ui.gray('1.')} cd ${here(target)}`,
-    `${ui.gray('2.')} ${ui.cyan(chosenStack && chosenStack !== 'minimal' ? 'npm install' : installHint())}`,
-    `${ui.gray('3.')} lattice check`,
+    `${ui.gray('2.')} ${ui.cyan('lattice setup')}  ${ui.gray('walk through the rest')}`,
+    `${ui.gray('3.')} ${ui.cyan('npm run dev')}  ${ui.gray('when setup passes')}`,
   ])
   return 0
 }
@@ -280,13 +294,13 @@ export function check(opts = {}) {
 export function installHooks(target, { quiet = true } = {}) {
   if (!isRepo(target)) {
     if (!quiet) ui.step.warn('not a git repo yet; run "lattice hooks install" after git init')
-    return 1
+    return 0
   }
   vendorHooks(target)
   const existing = configGet('core.hooksPath', target)
   if (existing && existing !== HOOKS_PATH) {
-    ui.step.warn(`core.hooksPath is already ${existing}; leaving it alone`)
-    return 1
+    if (!quiet) ui.step.warn(`core.hooksPath is already ${existing}; leaving it alone`)
+    return 0
   }
   configSet('core.hooksPath', HOOKS_PATH, target)
   if (!quiet) ui.step.ok(`git hooks installed (${ui.gray(HOOKS_PATH)})`)
@@ -307,4 +321,27 @@ export function hooks(opts = {}) {
 function cancel() {
   ui.step.warn('cancelled')
   return 1
+}
+
+/** Git init, first commit, dev branch, and hooks for a greenfield scaffold. */
+function bootstrapRepo(target, version) {
+  if (!isRepo(target)) initRepo(target)
+
+  const example = join(target, '.env.example')
+  const local = join(target, '.env.local')
+  if (fs.existsSync(example) && !fs.existsSync(local)) {
+    fs.copyFileSync(example, local)
+    ui.step.ok(`copied ${ui.gray('.env.example')} ${ui.S.arrow} ${ui.gray('.env.local')}`)
+  }
+
+  try {
+    commitAll(target, `chore: scaffold from lattice-standards@${version}`, { noVerify: true })
+    ui.step.ok(`initial commit on ${ui.gray('main')}`)
+    createBranch('dev', target)
+    ui.step.ok(`created ${ui.gray('dev')} branch`)
+    installHooks(target, { quiet: false })
+  } catch (err) {
+    ui.step.warn(`could not create the initial commit: ${err.message}`)
+    ui.step.warn('Set git user.name and user.email, then commit manually and run: lattice hooks install')
+  }
 }

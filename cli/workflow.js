@@ -4,13 +4,114 @@
 
 import { resolve, join } from 'node:path'
 import fs from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import * as ui from './ui.js'
-import { HOOKS_PATH, VENDOR_DIR, projectTracker, hooksInstalled, standardsVersion } from './lib.js'
+import { HOOKS_PATH, VENDOR_DIR, projectTracker, hooksInstalled, standardsVersion, MIN_NODE_MAJOR } from './lib.js'
 import { check } from './commands.js'
 import { projectGate } from './hooks.js'
 import { git, gitOk, isRepo, refExists, currentBranch, commitSubjects, configGet } from './git.js'
 
-const MIN_NODE = [20, 9]
+/** Keys in .env.example with empty values that a human must fill in. */
+export function requiredEnvKeys(examplePath) {
+  const keys = []
+  for (const line of fs.readFileSync(examplePath, 'utf8').split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const m = trimmed.match(/^([A-Z][A-Z0-9_]*)=$/)
+    if (m) keys.push(m[1])
+  }
+  return keys
+}
+
+/** Keys from .env.example that are missing or empty in .env.local. */
+export function emptyEnvKeys(target) {
+  const example = join(target, '.env.example')
+  const local = join(target, '.env.local')
+  if (!fs.existsSync(example)) return []
+  const keys = requiredEnvKeys(example)
+  if (!keys.length) return []
+  if (!fs.existsSync(local)) return keys
+  const content = fs.readFileSync(local, 'utf8')
+  return keys.filter((k) => !envLocalValue(content, k))
+}
+
+/** Parse a value from .env.local (simple KEY=value lines). */
+export function envLocalValue(content, key) {
+  for (const line of content.split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const m = trimmed.match(/^([A-Z][A-Z0-9_]*)=(.*)$/)
+    if (m && m[1] === key) return m[2].trim()
+  }
+  return null
+}
+
+/** Comment lines above a key in .env.example, joined for display. */
+export function envKeyHint(exampleContent, key) {
+  const lines = exampleContent.split('\n')
+  const hints = []
+  for (let i = 0; i < lines.length; i++) {
+    if (!lines[i].trim().startsWith(`${key}=`)) continue
+    for (let j = i - 1; j >= 0; j--) {
+      const t = lines[j].trim()
+      if (t.startsWith('#')) hints.unshift(t.replace(/^#\s?/, ''))
+      else if (t && !t.startsWith('#')) break
+    }
+    break
+  }
+  return hints.join(' ')
+}
+
+/** Set one key in .env.local content, preserving the rest of the file. */
+export function setEnvLocalValue(content, key, value) {
+  const lines = content.split('\n')
+  let found = false
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].trim().match(/^([A-Z][A-Z0-9_]*)=(.*)$/)
+    if (m && m[1] === key) {
+      lines[i] = `${key}=${value}`
+      found = true
+      break
+    }
+  }
+  if (!found) lines.push(`${key}=${value}`)
+  return lines.join('\n')
+}
+
+/** Required npm major from the project's devEngines pin, or null. */
+function requiredNpmMajor(target) {
+  const pkgPath = join(target, 'package.json')
+  if (!fs.existsSync(pkgPath)) return null
+  try {
+    const ver = JSON.parse(fs.readFileSync(pkgPath, 'utf8')).devEngines?.packageManager?.version
+    if (!ver) return null
+    const m = String(ver).match(/\^?(\d+)/)
+    return m ? Number(m[1]) : null
+  } catch {
+    return null
+  }
+}
+
+function runningNpmMajor() {
+  const fromAgent = process.env.npm_config_user_agent?.match(/npm\/(\d+)/)?.[1]
+  if (fromAgent) return Number(fromAgent)
+  try {
+    return Number(execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim().split('.')[0])
+  } catch {
+    return null
+  }
+}
+
+function expectsHooks(target) {
+  const pkgPath = join(target, 'package.json')
+  if (!fs.existsSync(pkgPath)) return false
+  try {
+    const prep = JSON.parse(fs.readFileSync(pkgPath, 'utf8')).scripts?.prepare
+    return typeof prep === 'string' && prep.includes('lattice hooks')
+  } catch {
+    return false
+  }
+}
 
 /** Resolve the pair of refs a release spans, preferring the remote. */
 function releaseRefs(cwd) {
@@ -131,19 +232,26 @@ export function release(opts = {}) {
 }
 
 function nodeTooOld() {
-  const [maj, min] = process.versions.node.split('.').map(Number)
-  return maj < MIN_NODE[0] || (maj === MIN_NODE[0] && min < MIN_NODE[1])
+  const [maj] = process.versions.node.split('.').map(Number)
+  return maj < MIN_NODE_MAJOR
 }
 
-/** Check the developer's machine is set up. Written to be read by anyone. */
-export function doctor(opts = {}) {
-  const target = resolve(process.cwd(), opts.dir ?? '.')
+/** Structured pre-flight results for doctor and setup. */
+export function auditDoctor(target) {
   const results = []
   const ok = (m) => results.push([true, m])
   const bad = (m, fix) => results.push([false, m, fix])
 
-  if (nodeTooOld()) bad(`Node ${process.versions.node} is too old`, `install Node ${MIN_NODE.join('.')} or newer`)
+  if (nodeTooOld()) bad(`Node ${process.versions.node} is too old`, `install Node ${MIN_NODE_MAJOR} or newer`)
   else ok(`Node ${process.versions.node}`)
+
+  const npmPin = requiredNpmMajor(target)
+  if (npmPin !== null) {
+    const npmMajor = runningNpmMajor()
+    if (npmMajor === null) bad('could not detect npm version', `install npm@${npmPin}`)
+    else if (npmMajor < npmPin) bad(`npm ${npmMajor} is too old (project requires ${npmPin})`, `npm i -g npm@${npmPin}`)
+    else ok(`npm ${npmMajor}`)
+  }
 
   if (!isRepo(target)) {
     bad('this folder is not a git repository', 'run: git init')
@@ -152,12 +260,21 @@ export function doctor(opts = {}) {
     const who = configGet('user.email', target) || gitOk(['config', '--get', 'user.email'], target)
     if (who) ok('git knows who you are')
     else bad('git does not know your email', 'run: git config user.email you@example.com')
+    if (refExists('dev', target)) ok('dev branch exists')
+    else bad('no dev branch', 'run: git branch dev')
+    if (gitOk(['remote', 'get-url', 'origin'], target)) ok('origin remote is set')
+    else bad('no origin remote', 'create a GitHub repo and run: git remote add origin <url>')
   }
 
   if (fs.existsSync(join(target, VENDOR_DIR))) ok('standards are installed')
   else bad('the standard is not installed here', 'run: lattice init')
 
-  if (fs.existsSync(join(target, HOOKS_PATH))) {
+  if (expectsHooks(target)) {
+    if (!fs.existsSync(join(target, HOOKS_PATH))) {
+      bad('safety checks are not installed', 'run: lattice hooks install')
+    } else if (hooksInstalled(target)) ok('safety checks run before every commit')
+    else bad('safety checks are not switched on', 'run: lattice hooks install')
+  } else if (fs.existsSync(join(target, HOOKS_PATH))) {
     if (hooksInstalled(target)) ok('safety checks run before every commit')
     else bad('safety checks are not switched on', 'run: lattice hooks install')
   }
@@ -167,8 +284,19 @@ export function doctor(opts = {}) {
   }
 
   const example = join(target, '.env.example')
-  if (fs.existsSync(example) && !fs.existsSync(join(target, '.env.local'))) {
-    bad('you have no local settings file', 'copy .env.example to .env.local and fill it in')
+  if (fs.existsSync(example)) {
+    const keys = requiredEnvKeys(example)
+    const local = join(target, '.env.local')
+    if (keys.length) {
+      if (!fs.existsSync(local)) {
+        bad('you have no local settings file', 'copy .env.example to .env.local and fill it in')
+      } else {
+        const content = fs.readFileSync(local, 'utf8')
+        const empty = keys.filter((k) => !envLocalValue(content, k))
+        if (empty.length) bad(`settings missing or empty: ${empty.join(', ')}`, 'fill them in .env.local')
+        else ok('local settings file has values for every required key')
+      }
+    }
   }
 
   const prefix = projectTracker(target)
@@ -177,11 +305,19 @@ export function doctor(opts = {}) {
   const branch = currentBranch(target)
   if (branch) ok(`you are on branch ${branch}`)
 
+  const problems = results.filter(([g]) => !g).length
+  return { results, problems }
+}
+
+/** Check the developer's machine is set up. Written to be read by anyone. */
+export function doctor(opts = {}) {
+  const target = resolve(process.cwd(), opts.dir ?? '.')
+  const { results, problems } = auditDoctor(target)
+
   for (const [good, msg, fix] of results) {
     if (good) ui.step.ok(msg)
     else ui.step.err(`${msg}${fix ? ` ${ui.gray(`(${fix})`)}` : ''}`)
   }
-  const problems = results.filter(([g]) => !g).length
   console.log('')
   if (!problems) {
     ui.step.ok('Your setup looks good.')

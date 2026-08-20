@@ -21,7 +21,7 @@ file specifically, not `.env.local`):
 SUPABASE_AUTH_THIRD_PARTY_CLERK_DOMAIN=example.clerk.accounts.dev
 ```
 
-Then start the local stack:
+Then start the local stack (requires Docker):
 
 ```bash
 supabase start
@@ -57,7 +57,8 @@ never edit a migration that has already been pushed.
 supabase migration new add_documents_status
 ```
 
-Edit the generated file in `migrations/`, then apply it locally:
+Edit the generated file in `migrations/`, then apply it locally (Docker required
+for `supabase start`):
 
 ```bash
 supabase migration up
@@ -99,13 +100,13 @@ are not uuids, so the policy silently denies everything.
 Run this after every schema change and commit the result:
 
 ```bash
-supabase gen types typescript --linked > packages/types/database.ts
+supabase gen types typescript --linked > packages/db/src/database.types.ts
 ```
 
 For the local stack instead of the linked project:
 
 ```bash
-supabase gen types typescript --local > packages/types/database.ts
+supabase gen types typescript --local > packages/db/src/database.types.ts
 ```
 
 Pass the generated `Database` type into `createClient<Database>(...)` so queries

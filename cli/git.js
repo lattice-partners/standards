@@ -3,10 +3,33 @@
 
 import { execFileSync } from 'node:child_process'
 
+/** Ambient git env vars that silently override an explicit cwd. */
+const GIT_ENV_VARS = [
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_INDEX_FILE',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_COMMON_DIR',
+  'GIT_PREFIX',
+  'GIT_CEILING_DIRECTORIES',
+]
+
+/** Copy process.env without inherited git state. */
+export function gitEnv() {
+  const env = { ...process.env }
+  for (const key of GIT_ENV_VARS) delete env[key]
+  return env
+}
+
 /** Run git and return trimmed stdout. Throws with git's stderr on failure. */
 export function git(args, cwd = process.cwd()) {
   try {
-    return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+    return execFileSync('git', args, {
+      cwd,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: gitEnv(),
+    }).trim()
   } catch (err) {
     const detail = (err.stderr || '').toString().trim() || err.message
     throw new Error(`git ${args.join(' ')}: ${detail}`)
@@ -54,6 +77,7 @@ export function stagedContent(file, cwd = process.cwd()) {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
       maxBuffer: 32 * 1024 * 1024,
+      env: gitEnv(),
     })
   } catch {
     return ''
@@ -86,4 +110,22 @@ export function refExists(ref, cwd = process.cwd()) {
 /** Re-stage a file the hook rewrote (prettier autofix). */
 export function stageFile(file, cwd = process.cwd()) {
   git(['add', '--', file], cwd)
+}
+
+/** Initialise a repo with main as the default branch. */
+export function initRepo(cwd = process.cwd()) {
+  git(['init', '-b', 'main'], cwd)
+}
+
+/** Stage everything and commit. */
+export function commitAll(cwd, message, { noVerify = false } = {}) {
+  git(['add', '-A'], cwd)
+  const args = ['commit', '-m', message]
+  if (noVerify) args.push('--no-verify')
+  git(args, cwd)
+}
+
+/** Create a branch without checking it out. */
+export function createBranch(name, cwd = process.cwd()) {
+  git(['branch', name], cwd)
 }

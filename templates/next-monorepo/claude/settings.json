@@ -13,8 +13,6 @@
       "Read(./.env)",
       "Read(./.env.production)",
       "Read(./.env.production.local)",
-      "Read(./apps/*/.env)",
-      "Read(./apps/*/.env.production)",
       "Read(./apps/*/.env.production.local)"
     ],
     "ask": [

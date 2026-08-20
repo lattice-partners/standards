@@ -80,6 +80,7 @@ Values live in Vercel, per environment. Nothing is committed.
 ```bash
 vercel env ls
 vercel env add SUPABASE_SECRET_KEY production
+cd <repo-root>
 vercel env pull .env.local              # development values
 vercel env pull .env.local --environment=staging
 ```

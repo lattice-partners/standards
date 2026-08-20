@@ -6,10 +6,12 @@ import readline from 'node:readline'
 import { spawn } from 'node:child_process'
 import { resolve, join } from 'node:path'
 import fs from 'node:fs'
-import { PKG_ROOT, VENDOR_DIR, standardsVersion, standardDocs, status } from './lib.js'
+import { PKG_ROOT, VENDOR_DIR, standardsVersion, standardDocs, stackDocs, setupGuideDocs, status } from './lib.js'
 import * as ui from './ui.js'
-import { select, Cancelled } from './prompts.js'
+import { select, text, Cancelled } from './prompts.js'
 import { init, adopt, sync, check } from './commands.js'
+import { doctor, verify, ticket, release } from './workflow.js'
+import { setup } from './setup.js'
 
 const home = process.env.HOME || ''
 const tilde = (p) => (home && p.startsWith(home) ? '~' + p.slice(home.length) : p)
@@ -36,8 +38,13 @@ function renderStatus(target, st) {
 function menu(st) {
   const items = st.initialized
     ? [
+        { label: 'setup', value: 'setup', hint: 'walk through project setup' },
         { label: 'check', value: 'check', hint: 'verify conformance' },
         { label: 'sync', value: 'sync', hint: 'update the vendored standard' },
+        { label: 'doctor', value: 'doctor', hint: 'check this machine' },
+        { label: 'verify', value: 'verify', hint: 'is it safe to ship?' },
+        { label: 'ticket', value: 'ticket', hint: 'start work on a ticket' },
+        { label: 'release', value: 'release', hint: 'print the release PR body' },
       ]
     : [{ label: 'init', value: 'init', hint: 'scaffold a new project here' }]
   items.push(
@@ -50,22 +57,38 @@ function menu(st) {
 
 async function runAction(action, target) {
   if (action === 'docs') return openDoc(target)
-  await { init, adopt, sync, check }[action]({ dir: target })
+  if (action === 'ticket') {
+    const id = await text('Ticket ID', {})
+    return ticket({ dir: target, id })
+  }
+  await { init, adopt, sync, check, setup, doctor, verify, release }[action]({ dir: target })
 }
 
 async function openDoc(target) {
-  const source = fs.existsSync(join(target, VENDOR_DIR)) ? join(target, VENDOR_DIR) : join(PKG_ROOT, 'core')
+  const st = status(target)
+  const vendored = fs.existsSync(join(target, VENDOR_DIR))
+  const coreSource = vendored ? join(target, VENDOR_DIR) : join(PKG_ROOT, 'core')
+  const stackSource = join(PKG_ROOT, 'stack')
+
+  const choices = standardDocs().map((f) => ({ label: f, value: join(coreSource, f) }))
+  if (st.stack && st.stack !== 'minimal') {
+    for (const f of stackDocs()) {
+      const path = vendored ? join(target, VENDOR_DIR, f) : join(stackSource, f)
+      if (fs.existsSync(path)) choices.push({ label: f, value: path })
+    }
+    for (const f of setupGuideDocs()) {
+      choices.push({ label: f.replace('/README.md', ' setup'), value: join(stackSource, f) })
+    }
+  }
+
   let file
   try {
-    file = await select(
-      'Which standard?',
-      standardDocs().map((f) => ({ label: f, value: f })),
-    )
+    file = await select('Which standard?', choices)
   } catch (err) {
     if (err instanceof Cancelled) return
     throw err
   }
-  await page(join(source, file))
+  await page(file)
 }
 
 // Show a file in the user's pager, falling back to printing it.

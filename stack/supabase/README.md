@@ -45,8 +45,11 @@ schema and replays local migrations.
 
 ## 3. Link the CLI
 
+The scaffold already ships `supabase/config.toml`. Set `project_id` in that file
+to a slug that is unique on your machine (it only namespaces local Docker
+containers). Then link to the hosted project:
+
 ```bash
-supabase init                          # creates supabase/config.toml
 supabase login
 supabase link --project-ref <project-id>
 supabase start                         # local stack, needs Docker
@@ -99,6 +102,12 @@ by hand in the dashboard SQL editor: it drifts from the repo and the next
 ```bash
 supabase migration new add_documents_table   # write SQL by hand
 supabase db diff -f add_documents_table      # or generate from local changes
+supabase migration up                        # apply pending migrations locally
+```
+
+To rebuild the local database from scratch (Docker required):
+
+```bash
 supabase db reset                            # replay all migrations + seed
 ```
 

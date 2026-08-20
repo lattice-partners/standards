@@ -12,45 +12,163 @@ standard itself.
 
 ## Use it in a project
 
-### Install
+### Prerequisites
+
+Before you start, install:
+
+- **Node 24 or newer** (CI and `.nvmrc` target Node 26, the current LTS)
+- **npm 12** (`npm i -g npm@12`)
+- **git**, with `user.name` and `user.email` configured
+
+### Install the CLI
 
 Get the `lattice` command on your PATH:
 
 ```bash
-npm i -g github:lattice-partners/standards#v0.5.0
+npm i -g github:lattice-partners/standards#v0.6.0
 ```
 
 Or skip the install and prefix any command with
-`npx github:lattice-partners/standards#v0.5.0`.
+`npx github:lattice-partners/standards#v0.6.0`.
 
-### Set up a project
+### Set up a new project (greenfield)
 
-New (greenfield) project - Lattice owns the stack:
+Follow these steps in order. Each step assumes the previous ones are done.
+
+#### 1. Scaffold the project
 
 ```bash
 lattice init my-app
 cd my-app
+```
+
+That vendors the standard into `.lattice/`, writes `AGENTS.md`, scaffolds the
+Lattice stack (`next-monorepo` by default), copies `.env.example` to
+`.env.local`, runs `git init`, creates an initial commit on `main`, creates a
+`dev` branch, and installs the git hooks.
+
+#### 2. Run the setup wizard
+
+```bash
+lattice setup
+```
+
+This walks you through the rest interactively: git identity, creating the GitHub
+repo and pasting the remote URL, `npm install`, the external-service checklist,
+and filling in `.env.local` one value at a time. Run it again any time you need
+to pick up where you left off.
+
+Or say yes when `lattice init` asks to run the wizard immediately after
+scaffolding.
+
+#### 3. Check your machine (optional)
+
+```bash
+lattice doctor
+```
+
+Run this before or after `npm install`. It catches a wrong Node or npm version, a missing
+`dev` branch, a missing `origin` remote, and empty values in `.env.local`.
+`lattice setup` fixes most of these as it goes.
+
+#### 4. Manual path (if you prefer)
+
+If you are not on an interactive terminal, follow these steps yourself:
+
+##### Create the GitHub repo and remote
+
+Create an empty repository on GitHub, then:
+
+```bash
+git remote add origin git@github.com:your-org/my-app.git
+git push -u origin main dev
+```
+
+Commit and push `package-lock.json` before relying on CI. The workflow runs
+`npm ci`, which requires the lockfile.
+
+##### Install dependencies
+
+```bash
 npm install
 ```
 
-That scaffolds the full Lattice stack: an npm workspaces monorepo with
-`apps/web` (Next.js, Tailwind, shadcn/ui) and `apps/api` (Next.js route
-handlers), Supabase with RLS, Clerk, and Vercel config. The standards pin is
-already in the generated `package.json`, and `npm install` switches the git
-hooks on.
+The `prepare` script runs `lattice hooks install`. It succeeds even if hooks were
+already installed, and it does not clobber an existing `core.hooksPath` (for
+example a client repo already on Husky).
 
-For a library or service that is not a web app, use the config-only scaffold:
+##### Wire up external services
+
+Do these in order. Each links to the setup guide in the installed package under
+`node_modules/@lattice/standards/stack/` (or read them from the
+[lattice-standards repo](https://github.com/lattice-partners/standards/tree/main/stack)):
+
+1. **Supabase** - create the project, enable Point-in-Time Recovery before the
+   first migration ([guide](stack/supabase/README.md))
+2. **Clerk** - create the application ([guide](stack/clerk/README.md))
+3. **Clerk + Supabase** - wire Clerk as a third-party auth provider in Supabase
+   ([guide](stack/supabase/README.md#4-wire-up-clerk-as-a-third-party-auth-provider))
+4. **Vercel** - two projects (`apps/web` and `apps/api` root directories),
+   link, env vars per environment, staging with manual promotion to production
+   ([guide](stack/vercel/README.md))
+5. **Firewall** - rate-limit rules on the api project
+   ([guide](stack/vercel/README.md#5-rate-limiting-via-vercel-firewall))
+
+`vercel link` is only required for the Vercel Marketplace install path (Clerk).
+You can configure Clerk and Supabase before linking Vercel.
+
+Fill `.env.local` at the **repo root** with the values from those services.
+`vercel env pull .env.local` must be run from the repo root, not from
+`apps/web`. The Supabase CLI reads a separate root `.env` file (not
+`.env.local`); see `supabase/README.md` in the scaffold.
+
+Run `lattice doctor` again until every required setting has a value.
+
+##### Run the app
+
+```bash
+npm run dev
+```
+
+- `apps/web` - <http://localhost:3000>
+- `apps/api` - <http://localhost:3001>
+
+Set `API_URL=http://localhost:3001` in `.env.local` so `apps/web` rewrites
+`/api/*` to the api app.
+
+##### Verify
+
+```bash
+npx turbo run typecheck lint test build
+lattice verify
+```
+
+`build` fails with a clear error if `API_URL` is missing from `.env.local`.
+
+For day-to-day operations after setup, see `RUNBOOK.md` in the project (also
+linked from the generated `AGENTS.md`).
+
+### Config-only scaffold (minimal)
+
+For a library or service that is not a web app:
 
 ```bash
 lattice init my-lib --stack=minimal
-npm i -D github:lattice-partners/standards#v0.5.0   # pin it for the project and CI
+cd my-lib
+npm i -D github:lattice-partners/standards#v0.6.0
 ```
 
-Existing (client) repo - non-destructive overlay:
+The minimal template ships no root `package.json`, so there is no `prepare`
+script and hooks are not reinstalled automatically on a fresh clone. Run
+`lattice hooks install` after `git clone` if you add hooks manually.
+
+### Existing (client) repo
+
+Non-destructive overlay:
 
 ```bash
 lattice adopt .
-npm i -D github:lattice-partners/standards#v0.5.0
+npm i -D github:lattice-partners/standards#v0.6.0
 ```
 
 `adopt` injects a marked block into the existing `AGENTS.md` and leaves the rest
@@ -79,11 +197,12 @@ is structured this way.
 ### Day to day
 
 Run `lattice` in the repo to open the interactive shell: a home screen with the
-repo's standards status and a menu you work through. Or use the commands
-directly:
+repo's standards status and a menu you work through (check, sync, doctor,
+verify, ticket, release, docs). Or use the commands directly:
 
 ```bash
 lattice ticket MIN-155   # start a ticket: branch off dev, named after the ticket
+lattice setup            # walk through project setup (GitHub, env, npm install)
 lattice verify           # run every check and say whether it is safe to ship
 lattice doctor           # check this machine is set up correctly
 lattice release          # print the dev -> main pull request body
@@ -175,10 +294,13 @@ Projects pick the change up when they bump their pin and run `lattice sync`.
 
 ## Status
 
-v0.5.0 ships the full Lattice stack: the `next-monorepo` scaffold (Next.js,
+v0.6.0 makes `lattice init` produce a working repo: git bootstrap, `.env.local`,
+hooks that never break `npm install`, a real `doctor` pre-flight, one correct
+setup sequence in this README, and shared Supabase types in `packages/db`.
+
+v0.5.0 shipped the full Lattice stack: the `next-monorepo` scaffold (Next.js,
 Supabase with RLS, Clerk, Vercel), local-first enforcement through vendored git
-hooks, agent guardrails, and the Linear-driven branching model. The portable
-core, the CLI, and the config-only scaffold (`--stack=minimal`) all carry over.
+hooks, agent guardrails, and the Linear-driven branching model.
 
 Next: brownfield stack adoption, and error tracking and spend caps, which are
 added per client today.

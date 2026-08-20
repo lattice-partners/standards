@@ -54,7 +54,7 @@ There is no registry publish. A project pins the standard by installing straight
 from the GitHub tag:
 
 ```bash
-npm i -D github:lattice-partners/standards#v0.5.0
+npm i -D github:lattice-partners/standards#v0.6.0
 ```
 
 npm handles the pinning. When the CLI runs, it copies the `core/` docs bundled
@@ -72,23 +72,30 @@ my-app/
     agents-base.md
     working-agreement.md
     security-baseline.md
+    agent-safety.md
+    ticket-workflow.md
+    stack-baseline.md    (stack projects only)
     VERSION
   AGENTS.md            entry point, with the managed block below
   CLAUDE.md            symlink -> AGENTS.md
+  RUNBOOK.md           (next-monorepo scaffold)
 ```
 
 `AGENTS.md` carries a marker-delimited block that the CLI owns:
 
 ```markdown
 <!-- lattice:standards -->
-Standards: lattice-standards@0.5.0  (vendored in .lattice/)
+Standards: lattice-standards@0.6.0  (vendored in .lattice/)
 Engagement posture: greenfield
 
 Read the vendored standard before working here:
 
 - .lattice/agents-base.md - base engineering standard
+- .lattice/agent-safety.md - what an agent must never do to clear an error
 - .lattice/security-baseline.md - non-negotiable security rules
+- .lattice/ticket-workflow.md - branching, tickets, releases
 - .lattice/working-agreement.md - posture, rituals, commit discipline, DoD
+- .lattice/stack-baseline.md - Lattice stack rules (stack projects)
 <!-- /lattice:standards -->
 ```
 
@@ -105,8 +112,8 @@ Setting up and staying current:
 - **`init`** - greenfield scaffold: writes `AGENTS.md`, symlinks `CLAUDE.md`,
   vendors `core/` into `.lattice/`, seeds `memory/`, lays down the chosen
   scaffold (`next-monorepo` by default, or `--stack=minimal` for config only),
-  vendors the hooks and switches them on, and drops a version-pinned CI
-  workflow.
+  copies `.env.example` to `.env.local`, runs `git init`, creates an initial
+  commit on `main`, creates a `dev` branch, and installs the git hooks.
 - **`adopt`** - brownfield overlay, non-destructive: injects the block into an
   existing `AGENTS.md` (or creates a minimal one) and vendors `.lattice/`. No
   stack config, no scaffold, and no hooks are imposed.
@@ -120,12 +127,18 @@ Day to day:
 
 - **`ticket <ID>`** - fetch and branch from `origin/dev`, named after the ticket.
 - **`release`** - print the `dev` into `main` pull request body.
-- **`doctor`** - check this machine: Node version, git identity, hooks, missing
-  dependencies, local settings file.
+- **`setup`** - interactive wizard for a new project: git identity, GitHub
+  remote, `npm install`, external-service checklist, and `.env.local` values.
+  Run after `init`, or say yes when `init` offers it.
+- **`doctor`** - check this machine: Node and npm versions, git identity, `dev`
+  branch, `origin` remote, hooks, missing dependencies, and empty values in
+  `.env.local`.
 - **`verify`** - run every check and answer "is this safe to ship?" in plain
   language.
-- **`hooks install`** - point git at the vendored hooks. Refuses to take over an
-  existing `core.hooksPath`, so a client repo already on Husky keeps its own.
+- **`hooks install`** - point git at the vendored hooks. Returns success with a
+  warning when the target is not a repo or when `core.hooksPath` already points
+  elsewhere, so `npm install` never fails. `check` and `doctor` still fail when
+  hooks are expected but inactive.
 
 ## Enforcement happens before the commit
 
@@ -194,7 +207,7 @@ terminal:
 - **On a TTY** - `lattice` with no command opens the interactive shell: the hand
   logo, a home screen showing status (initialized, version, drift), and a
   context-aware menu. `init` and `adopt` prompt for anything not passed as a
-  flag.
+  flag. `setup` walks through GitHub, npm install, and env vars step by step.
 - **No TTY (CI, coding agents)** - no shell, no prompts. Subcommands run from
   flags and exit codes; bare `lattice` prints help and exits non-zero.
 
@@ -217,11 +230,11 @@ drifted from the version it pinned.
 
 `ci/` ships a `standards-check` composite GitHub Action and a template workflow.
 `init` drops the workflow into a new project pinned to the version, and it runs
-`lattice check` plus markdown lint and tests on every push and pull request.
-Projects can also reference the action directly:
+`lattice check` plus markdown lint and tests on pushes to `main`, `dev`, and
+release tags. Projects can also reference the action directly:
 
 ```yaml
-- uses: lattice-partners/standards/ci/actions/standards-check@v0.5.0
+- uses: lattice-partners/standards/ci/actions/standards-check@v0.6.0
 ```
 
 ## CLI internals
@@ -233,6 +246,7 @@ Zero runtime dependencies. Everything is Node built-ins.
 | `cli/index.js` | Entry point: parse args, dispatch, or launch the shell |
 | `cli/commands.js` | `init`, `adopt`, `sync`, `check`, `hooks install` |
 | `cli/workflow.js` | `ticket`, `release`, `doctor`, `verify` |
+| `cli/setup.js` | Interactive new-project setup wizard |
 | `cli/hooks.js` | The hook bodies: the pre-commit gate and commit-msg rules |
 | `cli/git.js` | Thin wrappers over the git CLI |
 | `cli/lib.js` | Vendoring, `AGENTS.md` generation, and `status()` |
@@ -250,8 +264,8 @@ Material changes get an ADR (`docs/adr/`) and a `VERSION` bump. The records so
 far: Conventional Commits (0001), no em dashes or emojis (0002), concise commit
 messages (0003), the CLI and scaffolding (0004), the interactive shell (0005),
 the Lattice stack (0006), local-first enforcement and agent guardrails (0007),
-and the branching and ticket workflow (0008). `CLAUDE.md` holds the working
-rules for changing this repo.
+the branching and ticket workflow (0008), and init producing a working repo
+(0009). `CLAUDE.md` holds the working rules for changing this repo.
 
 ADR-0007 also records three risks accepted deliberately rather than solved:
 agents hold production credentials, `main` takes direct commits, and there is no

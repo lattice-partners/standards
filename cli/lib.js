@@ -51,6 +51,9 @@ const DOC_DESC = {
   'stack-baseline.md': 'Lattice stack rules (layout, RLS, env, migrations)',
 }
 
+/** Minimum Node major version; keep in sync with engines.node in package.json. */
+export const MIN_NODE_MAJOR = 24
+
 /** Version of the installed standard, from the package VERSION file. */
 export function standardsVersion() {
   return fs.readFileSync(join(PKG_ROOT, 'VERSION'), 'utf8').trim()
@@ -66,6 +69,11 @@ function stackDir() {
 
 function hooksSrcDir() {
   return join(PKG_ROOT, 'hooks')
+}
+
+/** Stack setup guides that stay in the package (not vendored). */
+export function setupGuideDocs() {
+  return ['nextjs/README.md', 'supabase/README.md', 'clerk/README.md', 'vercel/README.md']
 }
 
 /** Filenames of the top-level standard docs shipped in core/. */
@@ -319,6 +327,8 @@ export function agentsMd({ name, version, posture, stack, tracker }) {
     '',
     '## Environment & ops',
     '<env vars, deploy targets, migration rules>',
+    '',
+    'Day-one setup and day-to-day operations: see `RUNBOOK.md`.',
     '',
   ].join('\n')
 }

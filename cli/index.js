@@ -5,18 +5,20 @@
 import { parseArgs } from 'node:util'
 import { init, adopt, sync, check, hooks } from './commands.js'
 import { ticket, release, doctor, verify } from './workflow.js'
+import { setup } from './setup.js'
 import { runHook } from './hooks.js'
 import { standardsVersion, STACKS } from './lib.js'
 import * as ui from './ui.js'
 import { shell } from './shell.js'
 
-const commands = { init, adopt, sync, check, hooks, ticket, release, doctor, verify }
+const commands = { init, adopt, sync, check, hooks, setup, ticket, release, doctor, verify }
 
 const COMMAND_HELP = [
   ['init [dir]', 'Scaffold a new (greenfield) project with the standard'],
   ['adopt [dir]', 'Overlay the standard onto an existing repo (non-destructive)'],
   ['sync [dir]', 'Update the vendored standard to the installed version'],
   ['check [dir]', 'Verify a project conforms (exit non-zero on drift)'],
+  ['setup [dir]', 'Interactive wizard: GitHub, npm install, env vars, and more'],
   ['hooks install', 'Point git at the vendored hooks'],
   ['ticket <ID>', 'Start a ticket: branch from dev'],
   ['release', 'Print the dev -> main pull request body'],
