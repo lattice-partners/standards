@@ -59,6 +59,11 @@ Then `ln -s AGENTS.md CLAUDE.md` so Claude Code and AGENTS.md-aware tools
 - **Tests ship with features.** Unit tests for every feature; integration/e2e
   for critical paths. Prefer too many over too few. Handle edge cases - if you
   can think of how it breaks, handle it.
+- **Own runnable setup work.** When a safe command can run in the current agent
+  session, run it there with a PTY and verify its result. Do not send a person
+  to another terminal to paste commands. Ask before machine-global installs or
+  external mutations; after a browser-only step, inspect the resulting local or
+  remote state before reporting success.
 
 ## Writing style
 

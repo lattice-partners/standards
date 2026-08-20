@@ -10,9 +10,9 @@ import { currentScreen } from './screen.js'
 export { Cancelled }
 
 /** Free-text prompt with an optional default. */
-export function text(question, { defaultValue = '', hint = '' } = {}) {
+export function text(question, { defaultValue = '', hint = '', mask = false } = {}) {
   const screen = currentScreen()
-  if (screen) return screen.text(question, { defaultValue, hint })
+  if (screen) return screen.text(question, { defaultValue, hint, mask })
   return new Promise((resolve, reject) => {
     const rl = readline.createInterface({ input: stdin, output: stdout })
     const shown = defaultValue ? gray(` (${defaultValue})`) : ''
@@ -25,6 +25,7 @@ export function text(question, { defaultValue = '', hint = '' } = {}) {
       reject(new Cancelled())
     })
     void hint
+    void mask
   })
 }
 

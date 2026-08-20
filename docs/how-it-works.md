@@ -54,7 +54,7 @@ There is no registry publish. A project pins the standard by installing straight
 from the GitHub tag:
 
 ```bash
-npm i -D github:lattice-partners/standards#v0.6.1
+npm i -D github:lattice-partners/standards#v0.7.0
 ```
 
 npm handles the pinning. When the CLI runs, it copies the `core/` docs bundled
@@ -85,7 +85,7 @@ my-app/
 
 ```markdown
 <!-- lattice:standards -->
-Standards: lattice-standards@0.6.1  (vendored in .lattice/)
+Standards: lattice-standards@0.7.0  (vendored in .lattice/)
 Engagement posture: greenfield
 
 Read the vendored standard before working here:
@@ -127,12 +127,12 @@ Day to day:
 
 - **`ticket <ID>`** - fetch and branch from `origin/dev`, named after the ticket.
 - **`release`** - print the `dev` into `main` pull request body.
-- **`setup`** - interactive wizard for a new project: git identity, GitHub
-  remote, `npm install`, external-service checklist, and `.env.local` values.
-  Run after `init`, or say yes when `init` offers it.
-- **`doctor`** - check this machine: Node and npm versions, git identity, `dev`
-  branch, `origin` remote, hooks, missing dependencies, and empty values in
-  `.env.local`.
+- **`setup`** - interactive, resumable setup owner. It runs commands in the
+  current terminal, verifies GitHub and provider state, handles `.env.local`
+  without logging secrets, and proves both local apps become healthy.
+- **`doctor`** - structured machine and project checks. Interactive use offers
+  one remediation at a time and verifies its postcondition; non-interactive use
+  remains a read-only status command.
 - **`verify`** - run every check and answer "is this safe to ship?" in plain
   language.
 - **`hooks install`** - point git at the vendored hooks. Returns success with a
@@ -235,7 +235,7 @@ drifted from the version it pinned.
 release tags. Projects can also reference the action directly:
 
 ```yaml
-- uses: lattice-partners/standards/ci/actions/standards-check@v0.6.1
+- uses: lattice-partners/standards/ci/actions/standards-check@v0.7.0
 ```
 
 ## CLI internals
@@ -247,7 +247,9 @@ Zero runtime dependencies. Everything is Node built-ins.
 | `cli/index.js` | Entry point: parse args, dispatch, or launch the shell |
 | `cli/commands.js` | `init`, `adopt`, `sync`, `check`, `hooks install` |
 | `cli/workflow.js` | `ticket`, `release`, `doctor`, `verify` |
-| `cli/setup.js` | Interactive new-project setup wizard |
+| `cli/setup.js` | Verified, resumable new-project setup orchestration |
+| `cli/fix.js` | Interactive remediation execution and postconditions |
+| `cli/services.js` | Supabase, Clerk, and Vercel probes and evidence |
 | `cli/screen.js` | Full-screen alternate-buffer session |
 | `cli/hooks.js` | The hook bodies: the pre-commit gate and commit-msg rules |
 | `cli/git.js` | Thin wrappers over the git CLI |

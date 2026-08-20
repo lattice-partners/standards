@@ -6,16 +6,28 @@
 // like real keys so the scanner has something to catch.
 
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import { join } from 'node:path'
 import { init, adopt, sync, check, hooks } from './commands.js'
 import { preCommit, commitMsg } from './hooks.js'
-import { ticket, releaseBody, setEnvLocalValue, envKeyHint, emptyEnvKeys } from './workflow.js'
-import { setup, normalizeRemoteUrl } from './setup.js'
-import { clip, padLine, spread, visibleWidth } from './screen.js'
+import { ticket, releaseBody, setEnvLocalValue, envKeyHint, emptyEnvKeys, auditDoctor } from './workflow.js'
+import { setup, normalizeRemoteUrl, waitForHealth } from './setup.js'
+import { clip, padLine, runCommandInTerminal, spread, visibleWidth } from './screen.js'
 import { standardsVersion, status, VENDOR_DIR, HOOKS_PATH } from './lib.js'
-import { git, configGet, refExists } from './git.js'
+import { git, configGet, isRepo, isRepoRoot, refExists, remoteHeads } from './git.js'
+import { applyFix, redactSecrets } from './fix.js'
+import {
+  parseCliJson,
+  parseSupabaseKeys,
+  pitrEnabled,
+  probeSupabase,
+  probeVercel,
+  recordSetupEvidence,
+  validateClerkKeys,
+  vercelEnvNames,
+} from './services.js'
 
 const version = standardsVersion()
 const root = fs.mkdtempSync(join(os.tmpdir(), 'lattice-cli-'))
@@ -101,6 +113,7 @@ await step('init defaults to the next-monorepo scaffold', async () => {
   }
   const pkg = JSON.parse(fs.readFileSync(join(d, 'package.json'), 'utf8'))
   assert.deepEqual(pkg.workspaces, ['apps/*', 'packages/*'])
+  assert.equal(pkg.devDependencies.supabase, '2.115.0')
   // {{PROJECT_NAME}} and {{STANDARDS_VERSION}} must both be substituted.
   assert.equal(pkg.name, 'acme')
   assert.equal(JSON.stringify(pkg).includes('{{'), false, 'unsubstituted template var')
@@ -210,6 +223,18 @@ await step('init creates a git repo with main, dev, hooks, and .env.local', asyn
   assert.ok(fs.existsSync(join(d, '.env.local')))
   assert.equal(git(['ls-files', '.env.local'], d), '')
   assert.equal(git(['rev-list', '--count', 'HEAD'], d), '1')
+})
+
+await step('init creates a nested repository instead of committing its parent', async () => {
+  const parent = repo('nested-parent')
+  write(parent, 'parent.txt', 'parent\n')
+  commit(parent, 'chore: parent')
+  const before = git(['rev-parse', 'HEAD'], parent)
+  const child = join(parent, 'child')
+  await init({ dir: child, name: 'nested', stack: 'minimal' })
+  assert.equal(isRepoRoot(child), true)
+  assert.equal(git(['rev-parse', 'HEAD'], parent), before)
+  assert.equal(fs.realpathSync(git(['rev-parse', '--show-toplevel'], child)), fs.realpathSync(child))
 })
 
 await step('git() scrubs inherited git environment variables', () => {
@@ -428,9 +453,20 @@ await step('setup refuses an uninitialized directory', async () => {
 
 await step('normalizeRemoteUrl accepts common GitHub paste shapes', () => {
   assert.equal(normalizeRemoteUrl('git@github.com:acme/app.git'), 'git@github.com:acme/app.git')
-  assert.equal(normalizeRemoteUrl('https://github.com/acme/app'), 'git@github.com:acme/app.git')
-  assert.equal(normalizeRemoteUrl('github.com/acme/app'), 'git@github.com:acme/app.git')
+  assert.equal(normalizeRemoteUrl('https://github.com/acme/app'), 'https://github.com/acme/app.git')
+  assert.equal(normalizeRemoteUrl('github.com/acme/app'), 'https://github.com/acme/app.git')
   assert.equal(normalizeRemoteUrl('not a url'), null)
+})
+
+await step('remoteHeads verifies branches on a reachable remote', () => {
+  const source = repo('remote-source')
+  commit(source, 'chore: init')
+  git(['branch', 'dev'], source)
+  const bare = tmp('remote.git')
+  git(['init', '--bare'], bare)
+  git(['push', bare, 'main', 'dev'], source)
+  assert.deepEqual([...remoteHeads(bare, source)].sort(), ['dev', 'main'])
+  assert.throws(() => remoteHeads(join(root, 'missing.git'), source))
 })
 
 await step('setEnvLocalValue updates a key in place', () => {
@@ -456,6 +492,119 @@ await step('screen clip and spread fit a terminal width', () => {
   assert.equal(clip('abcdefghij', 6), 'abcde…')
   assert.equal(padLine('hi', 5), 'hi   ')
   assert.equal(spread('left', 'right', 14), 'left     right')
+})
+
+await step('doctor attaches a runnable git init fix', () => {
+  const d = tmp('doctorfix')
+  const gitInit = auditDoctor(d).results.find((result) => result.action?.kind === 'git-init')
+  assert.ok(gitInit)
+  assert.equal(gitInit.action.label, 'git init -b main')
+  assert.equal(gitInit.id, 'git-repository')
+})
+
+await step('applyFix verifies the named doctor postcondition', async () => {
+  const d = tmp('applyfix')
+  const check = auditDoctor(d).results.find((result) => result.id === 'git-repository')
+  const result = await applyFix(d, check)
+  assert.equal(result.ran, true)
+  assert.equal(result.verified, true)
+  assert.equal(isRepo(d), true)
+})
+
+await step('secret redaction masks provider tokens', () => {
+  const output = redactSecrets('Authorization: Bearer sk_test_abc123 and sbp_token123')
+  assert.equal(output.includes('abc123'), false)
+  assert.equal(output.includes('token123'), false)
+})
+
+await step('provider parsers accept current CLI response shapes', () => {
+  const json = parseCliJson('notice\n[{"name":"publishable","api_key":"sb_publishable_public"},{"name":"secret","api_key":"sb_secret_private"}]')
+  assert.deepEqual(parseSupabaseKeys(json), {
+    publishable: 'sb_publishable_public',
+    secret: 'sb_secret_private',
+  })
+  assert.equal(pitrEnabled({ pitr_enabled: true }), true)
+  assert.deepEqual([...vercelEnvNames({ envs: [{ key: 'API_URL' }] })], ['API_URL'])
+  assert.equal(validateClerkKeys({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_test_public', CLERK_SECRET_KEY: 'sk_test_private' }).good, true)
+  assert.equal(validateClerkKeys({ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_test_public', CLERK_SECRET_KEY: 'sk_live_private' }).good, false)
+})
+
+await step('Supabase probe verifies auth, keys, and PITR from fixtures', () => {
+  const d = tmp('supabase-probe')
+  write(d, 'node_modules/.bin/supabase', '')
+  write(d, 'supabase/.temp/project-ref', 'abcdefgh')
+  const runner = (_command, args) => {
+    const joined = args.join(' ')
+    if (joined.startsWith('projects list')) return { ok: true, stdout: '[{"id":"abcdefgh"}]' }
+    if (joined.startsWith('projects api-keys')) {
+      return { ok: true, stdout: '[{"name":"publishable","api_key":"sb_publishable_public"},{"name":"secret","api_key":"sb_secret_private"}]' }
+    }
+    if (joined.startsWith('backups list')) return { ok: true, stdout: '{"pitr_enabled":true}' }
+    return { ok: false, stdout: '' }
+  }
+  assert.equal(probeSupabase(d, runner).good, true)
+  const noPitr = (_command, args) => args[0] === 'backups'
+    ? { ok: true, stdout: '{"pitr_enabled":false}' }
+    : runner(_command, args)
+  assert.equal(probeSupabase(d, noPitr).reason, 'Supabase PITR is not enabled')
+})
+
+await step('Vercel probe rejects missing env and accepts published firewall fixtures', () => {
+  const d = tmp('vercel-probe')
+  write(d, 'node_modules/.bin/vercel', '')
+  write(d, 'apps/web/.vercel/project.json', '{"projectId":"web","orgId":"org"}')
+  write(d, 'apps/api/.vercel/project.json', '{"projectId":"api","orgId":"org"}')
+  const webKeys = ['API_URL', 'NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', 'CLERK_SECRET_KEY']
+  const apiKeys = ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_SECRET_KEY', 'NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY', 'CLERK_SECRET_KEY']
+  const runner = (_command, args) => {
+    if (args[0] === 'whoami') return { ok: true, stdout: 'tester' }
+    if (args[0] === 'env') {
+      const keys = args.join(' ').includes('apps/web') ? webKeys : apiKeys
+      return { ok: true, stdout: JSON.stringify(keys.map((key) => ({ key }))) }
+    }
+    if (args[0] === 'firewall') return { ok: true, stdout: 'Rate Limit /api active' }
+    return { ok: false, stdout: '' }
+  }
+  assert.equal(probeVercel(d, runner).good, true)
+  const missingEnv = (_command, args) => args[0] === 'env'
+    ? { ok: true, stdout: '[]' }
+    : runner(_command, args)
+  assert.match(probeVercel(d, missingEnv).reason, /missing Vercel environment variables/)
+})
+
+await step('setup evidence is resumable and never stores secrets', () => {
+  const d = tmp('evidence')
+  write(d, 'memory/project-details.md', '# Project details\n')
+  assert.equal(recordSetupEvidence(d, 'Supabase PITR', 'project-ref'), true)
+  assert.equal(recordSetupEvidence(d, 'Supabase PITR', 'project-ref'), true)
+  const content = fs.readFileSync(join(d, 'memory/project-details.md'), 'utf8')
+  assert.equal((content.match(/Supabase PITR/g) || []).length, 1)
+  assert.doesNotMatch(content, /sk_test|sb_secret/)
+})
+
+await step('health polling requires both apps', async () => {
+  const seen = new Set()
+  const good = await waitForHealth(async (url) => {
+    seen.add(url)
+    return { ok: true }
+  }, 50, 1)
+  assert.equal(good, true)
+  assert.equal(seen.size, 2)
+  const bad = await waitForHealth(async (url) => ({ ok: !url.includes('3001') }), 5, 1)
+  assert.equal(bad, false)
+})
+
+await step('terminal command runner reports status and spawn failures', () => {
+  assert.equal(runCommandInTerminal(process.execPath, ['--version'], root).ok, true)
+  assert.equal(runCommandInTerminal('lattice-command-that-does-not-exist', [], root).ok, false)
+})
+
+await step('PTY command output survives full-screen suspension and resume', () => {
+  const screenUrl = new URL('./screen.js', import.meta.url).href
+  const program = `import {withScreen,runInTerminal} from ${JSON.stringify(screenUrl)}; await withScreen(async()=>{runInTerminal(process.execPath,['-e','console.log("PTY_CHILD_OK")'])})`
+  const python = 'import os,pty,sys; pty.spawn(sys.argv[1:])'
+  const output = execFileSync('python3', ['-c', python, process.execPath, '--input-type=module', '-e', program], { encoding: 'utf8' })
+  assert.match(output, /PTY_CHILD_OK/)
 })
 
 await step('ticket branches from dev', () => {

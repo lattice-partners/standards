@@ -6,9 +6,9 @@ this directory is edited by hand against a live database.
 ## First-time setup
 
 ```bash
-npm i -g supabase
-supabase login
-supabase link --project-ref <project-ref>
+npm install
+npx --no-install supabase login
+npx --no-install supabase link --project-ref <project-ref>
 ```
 
 `<project-ref>` is the string in the project's dashboard URL.
@@ -24,7 +24,7 @@ SUPABASE_AUTH_THIRD_PARTY_CLERK_DOMAIN=example.clerk.accounts.dev
 Then start the local stack (requires Docker):
 
 ```bash
-supabase start
+npx --no-install supabase start
 ```
 
 ## Turn on backups before anything reaches production
@@ -54,20 +54,20 @@ Write the SQL yourself. Never change a live schema through the dashboard, and
 never edit a migration that has already been pushed.
 
 ```bash
-supabase migration new add_documents_status
+npx --no-install supabase migration new add_documents_status
 ```
 
 Edit the generated file in `migrations/`, then apply it locally (Docker required
 for `supabase start`):
 
 ```bash
-supabase migration up
+npx --no-install supabase migration up
 ```
 
 To rebuild the local database from scratch:
 
 ```bash
-supabase db reset
+npx --no-install supabase db reset
 ```
 
 That drops all local data. It is blocked for AI agents by
@@ -76,7 +76,7 @@ That drops all local data. It is blocked for AI agents by
 Push to the linked project once the change is reviewed and merged:
 
 ```bash
-supabase db push
+npx --no-install supabase db push
 ```
 
 ## Row Level Security
@@ -100,13 +100,13 @@ are not uuids, so the policy silently denies everything.
 Run this after every schema change and commit the result:
 
 ```bash
-supabase gen types typescript --linked > packages/db/src/database.types.ts
+npx --no-install supabase gen types typescript --linked > packages/db/src/database.types.ts
 ```
 
 For the local stack instead of the linked project:
 
 ```bash
-supabase gen types typescript --local > packages/db/src/database.types.ts
+npx --no-install supabase gen types typescript --local > packages/db/src/database.types.ts
 ```
 
 Pass the generated `Database` type into `createClient<Database>(...)` so queries

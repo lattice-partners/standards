@@ -45,7 +45,7 @@ the scaffold. `adopt` is unchanged.
 `GIT_WORK_TREE`, `GIT_INDEX_FILE`, `GIT_OBJECT_DIRECTORY`, `GIT_COMMON_DIR`,
 `GIT_PREFIX`, and `GIT_CEILING_DIRECTORIES` from child processes.
 
-**One toolchain floor:** `engines.node >= 24`, `.nvmrc` and CI on Node 26 (current
+**One toolchain floor:** `engines.node >= 24`, `.nvmrc` and CI on Node 24 (active
 LTS), `devEngines.packageManager` npm `^12` with `onFail: error`, and `doctor`
 checks npm major before `npm install`.
 
@@ -54,7 +54,7 @@ checks npm major before `npm install`.
 - A greenfield `lattice init` yields a repo ready for `npm install`, `lattice
   ticket`, and `lattice doctor` without manual git steps.
 - Client repos already on Husky keep their hooks path; `npm install` succeeds.
-- Projects must run on Node 24+; CI and `.nvmrc` target 26.
+- Projects must run on Node 24+; CI and `.nvmrc` target the active Node 24 LTS.
 - The standards repo itself re-enables hooks with env scrubbing in place; if
   index corruption reproduces in Conductor worktrees, the local gate may be
   narrowed to `lint:md` only rather than shipping an unsafe hook.

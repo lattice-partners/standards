@@ -63,25 +63,37 @@ const HAND = [
 
 const HAND_W = 34
 
+export const HAND_COLS = 36
+
+/** Hand art lines (no labels). Empty when the terminal cannot render it. */
+export function handLines() {
+  if (!(color && unicode)) return []
+  return HAND.map((raw) => '  ' + bold(white(raw.padEnd(HAND_W))))
+}
+
 /** Print the Lattice logo. Block art when rich; a plain wordmark otherwise. */
 export function banner(version) {
+  const lines = bannerLines(version)
   if (sink) {
-    sink.setHeader({ version: version ?? sink.version })
+    sink.setHeader({ version: version ?? sink.version, banner: true })
     return
   }
+  console.log('\n' + lines.join('\n') + '\n')
+}
+
+/** Banner lines: hand plus brand labels, or a plain wordmark. */
+export function bannerLines(version) {
   const tag = version ? `  ${version}` : ''
   if (!(color && unicode)) {
-    console.log(`\n  ${bold('LATTICE PARTNERS')}${gray('   standards' + tag)}\n`)
-    return
+    return [`  ${bold('LATTICE PARTNERS')}${gray('   standards' + tag)}`]
   }
   const labels = [bold('L A T T I C E'), gray('P A R T N E R S'), dim('standards' + tag)]
   const start = Math.floor((HAND.length - labels.length) / 2)
-  const lines = HAND.map((raw, i) => {
+  return HAND.map((raw, i) => {
     const left = '  ' + bold(white(raw.padEnd(HAND_W)))
     const li = i - start
     return left + (li >= 0 && li < labels.length ? '    ' + labels[li] : '')
   })
-  console.log('\n' + lines.join('\n') + '\n')
 }
 
 /** Styled status lines. */

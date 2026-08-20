@@ -50,9 +50,10 @@ to a slug that is unique on your machine (it only namespaces local Docker
 containers). Then link to the hosted project:
 
 ```bash
-supabase login
-supabase link --project-ref <project-id>
-supabase start                         # local stack, needs Docker
+npm install --save-dev supabase
+npx --no-install supabase login
+npx --no-install supabase link --project-ref <project-id>
+npx --no-install supabase start        # local stack, needs Docker
 ```
 
 Commit `supabase/config.toml`, `supabase/migrations/`, and `supabase/seed.sql`.
@@ -100,15 +101,15 @@ by hand in the dashboard SQL editor: it drifts from the repo and the next
 `db push` cannot see it.
 
 ```bash
-supabase migration new add_documents_table   # write SQL by hand
-supabase db diff -f add_documents_table      # or generate from local changes
-supabase migration up                        # apply pending migrations locally
+npx --no-install supabase migration new add_documents_table   # write SQL by hand
+npx --no-install supabase db diff -f add_documents_table      # or generate from local changes
+npx --no-install supabase migration up                        # apply pending migrations locally
 ```
 
 To rebuild the local database from scratch (Docker required):
 
 ```bash
-supabase db reset                            # replay all migrations + seed
+npx --no-install supabase db reset                            # replay all migrations + seed
 ```
 
 `db diff` output is a draft. Read it before committing. It emits redundant
@@ -118,9 +119,9 @@ statements, and does not capture data changes at all.
 Deploy:
 
 ```bash
-supabase db push --dry-run   # review
-supabase db push             # apply pending migrations
-supabase migration list      # compare local against remote history
+npx --no-install supabase db push --dry-run   # review
+npx --no-install supabase db push             # apply pending migrations
+npx --no-install supabase migration list      # compare local against remote history
 ```
 
 Every new table needs RLS in the same migration that creates it:
@@ -149,7 +150,7 @@ Never use `--include-seed` against production.
 ## 6. Type generation
 
 ```bash
-supabase gen types --lang typescript --local > packages/db/src/database.types.ts
+npx --no-install supabase gen types --lang typescript --local > packages/db/src/database.types.ts
 ```
 
 Use `--linked` to generate from the remote project instead. Regenerate whenever

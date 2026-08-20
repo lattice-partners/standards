@@ -13,11 +13,12 @@ Two rules cover most of it:
 Do this once when the project is new. The README in lattice-standards walks
 through the same steps in order; this is the short version.
 
-1. **Install the tools.** Node 24 or newer, npm 12, and git.
+1. **Install the tools.** Node 24 LTS or newer, npm 12, and git.
 2. **Scaffold the project.** `lattice init my-app && cd my-app`. Say yes when
    asked to run the setup wizard, or run `lattice setup` yourself afterward.
-3. **Finish setup.** The wizard walks through the GitHub remote, `npm install`,
-   the external-service checklist, and filling in `.env.local`.
+3. **Finish setup.** The wizard runs and verifies GitHub, dependency, provider,
+   environment, and local health actions in the current terminal. Browser-only
+   controls return to the wizard for verification.
 4. **Run the app.** `npm run dev` (web on port 3000, api on 3001).
 
 Run `lattice setup` again any time you need to pick up where you left off.

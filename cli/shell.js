@@ -55,6 +55,7 @@ function paintHome(target, st) {
     version: st.installed,
     context: tilde(target),
     subtitle: drift + posture,
+    banner: true,
   })
 }
 

@@ -9,10 +9,10 @@ markdown lint, the project lint, and the tests (each skipped if the script is
 absent). Reference it from any project workflow:
 
 ```yaml
-- uses: lattice-partners/standards/ci/actions/standards-check@v0.6.1
+- uses: lattice-partners/standards/ci/actions/standards-check@v0.7.0
 ```
 
-Pin to a tag (`@v0.6.1`), not `@main`, in real projects.
+Pin to a tag (`@v0.7.0`), not `@main`, in real projects.
 
 ## workflows/ci.yml
 

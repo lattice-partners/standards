@@ -2,6 +2,7 @@
 // hooks, ticket, and release commands can all operate on a given project dir.
 
 import { execFileSync } from 'node:child_process'
+import fs from 'node:fs'
 
 /** Ambient git env vars that silently override an explicit cwd. */
 const GIT_ENV_VARS = [
@@ -48,6 +49,16 @@ export function gitOk(args, cwd = process.cwd()) {
 
 export function isRepo(cwd = process.cwd()) {
   return gitOk(['rev-parse', '--git-dir'], cwd)
+}
+
+/** True only when cwd itself is the repository root, not inside a parent repo. */
+export function isRepoRoot(cwd = process.cwd()) {
+  try {
+    const root = git(['rev-parse', '--show-toplevel'], cwd)
+    return fs.realpathSync(root) === fs.realpathSync(cwd)
+  } catch {
+    return false
+  }
 }
 
 /** Current branch name, or null when detached or not a repo. */
@@ -128,4 +139,29 @@ export function commitAll(cwd, message, { noVerify = false } = {}) {
 /** Create a branch without checking it out. */
 export function createBranch(name, cwd = process.cwd()) {
   git(['branch', name], cwd)
+}
+
+/** Normalise a GitHub remote pasted by a human. */
+export function normalizeRemoteUrl(input) {
+  const u = input.trim()
+  if (!u) return null
+  const ssh = u.match(/^git@github\.com:([^/]+\/[^/\s#?]+?)(?:\.git)?$/i)
+  if (ssh) return `git@github.com:${ssh[1]}.git`
+  const https = u.match(/^https:\/\/github\.com\/([^/]+\/[^/\s#?]+?)(?:\.git)?\/?$/i)
+  if (https) return `https://github.com/${https[1]}.git`
+  const short = u.match(/^github\.com\/([^/]+\/[^/\s#?]+?)(?:\.git)?\/?$/i)
+  if (short) return `https://github.com/${short[1]}.git`
+  return null
+}
+
+/** Verify that a remote is reachable and optionally contains named heads. */
+export function remoteHeads(url, cwd = process.cwd()) {
+  const out = git(['ls-remote', '--heads', url], cwd)
+  return new Set(
+    out
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => line.split(/\s+/)[1]?.replace('refs/heads/', ''))
+      .filter(Boolean),
+  )
 }

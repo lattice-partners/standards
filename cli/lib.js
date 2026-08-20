@@ -34,6 +34,10 @@ export const HOOKS_PATH = `${VENDOR_DIR}/hooks`
 /** Scaffolds init can lay down. The first is the default. */
 export const STACKS = ['next-monorepo', 'minimal']
 
+/** Provider CLI versions tested by the setup workflow. */
+export const SUPABASE_CLI_VERSION = '2.115.0'
+export const VERCEL_CLI_VERSION = '59.3.0'
+
 const STACK_TEMPLATE = {
   'next-monorepo': 'next-monorepo',
   minimal: 'greenfield',

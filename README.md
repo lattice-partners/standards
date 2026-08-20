@@ -16,7 +16,7 @@ standard itself.
 
 Before you start, install:
 
-- **Node 24 or newer** (CI and `.nvmrc` target Node 26, the current LTS)
+- **Node 24 or newer** (CI and `.nvmrc` target Node 24, the active LTS)
 - **npm 12** (`npm i -g npm@12`)
 - **git**, with `user.name` and `user.email` configured
 
@@ -25,11 +25,11 @@ Before you start, install:
 Get the `lattice` command on your PATH:
 
 ```bash
-npm i -g github:lattice-partners/standards#v0.6.1
+npm i -g github:lattice-partners/standards#v0.7.0
 ```
 
 Or skip the install and prefix any command with
-`npx github:lattice-partners/standards#v0.6.1`.
+`npx github:lattice-partners/standards#v0.7.0`.
 
 ### Set up a new project (greenfield)
 
@@ -53,10 +53,10 @@ Lattice stack (`next-monorepo` by default), copies `.env.example` to
 lattice setup
 ```
 
-This walks you through the rest interactively: git identity, creating the GitHub
-repo and pasting the remote URL, `npm install`, the external-service checklist,
-and filling in `.env.local` one value at a time. Run it again any time you need
-to pick up where you left off.
+This owns the rest of setup in the same terminal. It runs and verifies git,
+dependency, provider CLI, and health-check commands; opens browser-only setup
+pages; and resumes by inspecting actual state. It does not create billable
+resources or require the GitHub CLI. Run it again to pick up where you left off.
 
 Or say yes when `lattice init` asks to run the wizard immediately after
 scaffolding.
@@ -67,9 +67,9 @@ scaffolding.
 lattice doctor
 ```
 
-Run this before or after `npm install`. It catches a wrong Node or npm version, a missing
-`dev` branch, a missing `origin` remote, and empty values in `.env.local`.
-`lattice setup` fixes most of these as it goes.
+Run this before or after `npm install`. In a terminal it offers to run one safe
+fix at a time and re-checks the result. In CI or an agent's non-interactive
+process it only reports status and preserves a non-zero failure code.
 
 #### 4. Manual path (if you prefer)
 
@@ -155,7 +155,7 @@ For a library or service that is not a web app:
 ```bash
 lattice init my-lib --stack=minimal
 cd my-lib
-npm i -D github:lattice-partners/standards#v0.6.1
+npm i -D github:lattice-partners/standards#v0.7.0
 ```
 
 The minimal template ships no root `package.json`, so there is no `prepare`
@@ -168,7 +168,7 @@ Non-destructive overlay:
 
 ```bash
 lattice adopt .
-npm i -D github:lattice-partners/standards#v0.6.1
+npm i -D github:lattice-partners/standards#v0.7.0
 ```
 
 `adopt` injects a marked block into the existing `AGENTS.md` and leaves the rest
@@ -293,6 +293,11 @@ Projects pick the change up when they bump their pin and run `lattice sync`.
 ---
 
 ## Status
+
+v0.7.0 makes setup self-executing and verifiable: commands run in the current
+terminal, every remediation is re-checked, provider setup is resumable, and the
+wizard only reports readiness after GitHub, Supabase, Clerk, Vercel, env, and
+local health checks pass.
 
 v0.6.1 is a full-screen interactive CLI: the shell, init, and setup wizard redraw
 in place instead of scrolling a transcript.

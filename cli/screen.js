@@ -3,6 +3,7 @@
 // Nested enter()/leave() share one session so init can hand off to setup.
 
 import readline from 'node:readline'
+import { spawnSync } from 'node:child_process'
 import { stdin, stdout } from 'node:process'
 import * as ui from './ui.js'
 import { Cancelled } from './ui.js'
@@ -88,12 +89,33 @@ export async function withScreen(fn) {
   }
 }
 
+/**
+ * Run a command in the real terminal. Suspends the full-screen session so the
+ * user sees the command's own output (npm install, git push, npm run dev).
+ */
+export function runCommandInTerminal(cmd, args, cwd = process.cwd()) {
+  const screen = currentScreen()
+  if (screen) screen.suspend()
+  try {
+    const r = spawnSync(cmd, args, { cwd, stdio: 'inherit', encoding: 'utf8' })
+    return { ok: r.status === 0, status: r.status, signal: r.signal, error: r.error ?? null }
+  } finally {
+    if (screen) screen.resume()
+  }
+}
+
+/** Run a command visibly and return whether it exited successfully. */
+export function runInTerminal(cmd, args, cwd = process.cwd()) {
+  return runCommandInTerminal(cmd, args, cwd).ok
+}
+
 class Screen {
   constructor() {
     this.title = 'lattice'
     this.version = ''
     this.context = ''
     this.subtitle = ''
+    this.banner = false
     this.progress = []
     this.logs = []
     this.panel = null
@@ -156,15 +178,17 @@ class Screen {
     this.panel = null
     this.progress = []
     this.subtitle = ''
+    this.banner = false
     this.prompt = null
     this.clearSpin()
   }
 
-  setHeader({ title, version, context, subtitle } = {}) {
+  setHeader({ title, version, context, subtitle, banner } = {}) {
     if (title != null) this.title = title
     if (version != null) this.version = version
     if (context != null) this.context = context
     if (subtitle != null) this.subtitle = subtitle
+    if (banner != null) this.banner = banner
     this.paint()
   }
 
@@ -221,8 +245,8 @@ class Screen {
     return { cols: stdout.columns || 80, rows: stdout.rows || 24 }
   }
 
-  promptLines(cols) {
-    const inner = cols - 4
+  promptLines(width) {
+    const inner = Math.max(8, width - 4)
     const p = this.prompt
     if (!p) return []
     if (p.type === 'select') {
@@ -233,7 +257,7 @@ class Screen {
         const pointer = active ? ui.cyan(ui.S.arrow) : ' '
         const label = active ? ui.cyan(o.label) : o.label
         const hint = o.hint ? ui.gray('  ' + o.hint) : ''
-        out.push(clip(`    ${pointer} ${label}${hint}`, cols))
+        out.push(clip(`    ${pointer} ${label}${hint}`, width))
       }
       return out
     }
@@ -244,7 +268,7 @@ class Screen {
         out.push('')
       }
       out.push('  ' + ui.bold(clip(p.question, inner)))
-      const shown = p.value || (p.defaultValue ? ui.dim(p.defaultValue) : '')
+      const shown = p.value ? (p.mask ? ui.dim('•'.repeat(p.value.length)) : p.value) : p.defaultValue ? ui.dim(p.mask ? '••••••••' : p.defaultValue) : ''
       out.push('  ' + ui.cyan(ui.S.bullet) + ' ' + shown)
       return out
     }
@@ -256,18 +280,45 @@ class Screen {
     const { cols, rows } = this.size()
     const inner = Math.max(10, cols - 4)
     const lines = []
+    const hand = this.banner ? ui.handLines() : []
+    const useHand = hand.length > 0 && cols >= 70
+    let prompt = []
 
-    lines.push('')
-    const left = [
-      '  ' + ui.bold(this.title || 'lattice'),
-      this.version ? ui.gray(`  ${ui.S.dot}  ${this.version}`) : '',
-    ].join('')
-    const right = this.context ? ui.gray(this.context) + ' ' : ''
-    lines.push(spread(left, right, cols))
-    if (this.subtitle) {
-      for (const line of wrap(this.subtitle, inner)) lines.push('  ' + ui.gray(line))
+    if (useHand) {
+      const rightWidth = Math.max(24, cols - ui.HAND_COLS - 1)
+      const right = [
+        ui.bold('L A T T I C E'),
+        ui.gray('P A R T N E R S'),
+        ui.dim('standards' + (this.version ? `  ${this.version}` : '')),
+        '',
+      ]
+      if (this.context) right.push(ui.gray(this.context))
+      if (this.subtitle) {
+        for (const line of wrap(this.subtitle, rightWidth)) right.push(ui.gray(line))
+      }
+      right.push('')
+      prompt = this.promptLines(rightWidth)
+      right.push(...prompt)
+      const n = Math.max(hand.length, right.length)
+      for (let i = 0; i < n; i++) {
+        lines.push(padLine(hand[i] ?? '', ui.HAND_COLS) + (right[i] ?? ''))
+      }
+      lines.push('')
+      prompt = []
+    } else {
+      lines.push('')
+      const left = [
+        '  ' + ui.bold(this.title || 'lattice'),
+        this.version ? ui.gray(`  ${ui.S.dot}  ${this.version}`) : '',
+      ].join('')
+      const right = this.context ? ui.gray(this.context) + ' ' : ''
+      lines.push(spread(left, right, cols))
+      if (this.subtitle) {
+        for (const line of wrap(this.subtitle, inner)) lines.push('  ' + ui.gray(line))
+      }
+      lines.push('')
+      prompt = this.promptLines(cols)
     }
-    lines.push('')
 
     if (this.progress.length) {
       for (const item of this.progress) {
@@ -290,7 +341,6 @@ class Screen {
     }
 
     const footerRows = 2
-    const prompt = this.promptLines(cols)
     const budget = Math.max(0, rows - lines.length - prompt.length - footerRows - 1)
 
     if (this.panel) {
@@ -346,7 +396,7 @@ class Screen {
       for (let i = 0; i < lines.length; i++) {
         if (stripAnsi(lines[i] ?? '').trimStart().startsWith(ui.S.bullet)) row = i
       }
-      const val = this.prompt.value || ''
+      const val = this.prompt.mask ? '•'.repeat(this.prompt.value.length) : this.prompt.value || ''
       const col = 4 + visibleWidth(ui.S.bullet) + 1 + visibleWidth(val)
       stdout.write(`\x1b[${row + 1};${Math.min(col, cols)}H` + ESC.show)
     } else {
@@ -406,8 +456,8 @@ class Screen {
     ], { idx: def ? 0 : 1 })
   }
 
-  async text(question, { defaultValue = '', hint = '' } = {}) {
-    this.prompt = { type: 'text', question, value: '', defaultValue, hint }
+  async text(question, { defaultValue = '', hint = '', mask = false } = {}) {
+    this.prompt = { type: 'text', question, value: '', defaultValue, hint, mask }
     this.footer = defaultValue
       ? 'enter confirm  ·  empty uses the default  ·  ctrl-c back'
       : 'enter confirm  ·  empty skips  ·  ctrl-c back'

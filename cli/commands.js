@@ -37,7 +37,7 @@ import {
 } from './lib.js'
 import * as ui from './ui.js'
 import { text, select, confirm, Cancelled } from './prompts.js'
-import { isRepo, configGet, configSet, initRepo, commitAll, createBranch } from './git.js'
+import { isRepo, isRepoRoot, configGet, configSet, initRepo, commitAll, createBranch } from './git.js'
 import { withScreen, currentScreen, screenDepth } from './screen.js'
 
 const POSTURE_CHOICES = [
@@ -215,6 +215,11 @@ export async function adopt(opts = {}) {
       ui.bold('Next step'),
       `${ui.gray('run')} ${ui.cyan(installHint())}`,
     ])
+    if (ui.interactive) {
+      const { offerCommand } = await import('./fix.js')
+      const pin = `github:lattice-partners/standards#v${version}`
+      await offerCommand(installHint(), ['npm', 'i', '-D', pin, '--allow-git=all'], target)
+    }
     if (screen && screenDepth() === 1) await screen.wait('enter to exit')
     return 0
   }
@@ -361,7 +366,7 @@ function cancel() {
 
 /** Git init, first commit, dev branch, and hooks for a greenfield scaffold. */
 function bootstrapRepo(target, version) {
-  if (!isRepo(target)) initRepo(target)
+  if (!isRepoRoot(target)) initRepo(target)
 
   const example = join(target, '.env.example')
   const local = join(target, '.env.local')
