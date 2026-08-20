@@ -10,6 +10,20 @@ export const color = isTTY && process.env.NO_COLOR == null && process.env.TERM !
 /** True when we can drive an interactive prompt (both streams are TTYs). */
 export const interactive = isTTY && process.stdin.isTTY === true
 
+/** Thrown when the user cancels a prompt (Ctrl-C, Esc, or q). */
+export class Cancelled extends Error {
+  constructor() {
+    super('cancelled')
+    this.name = 'Cancelled'
+  }
+}
+
+/** Optional full-screen sink. When set, status lines paint in place. */
+let sink = null
+export function setSink(s) {
+  sink = s
+}
+
 const wrap = (codes) => (s) => (color ? `\x1b[${codes}m${s}\x1b[0m` : String(s))
 export const bold = wrap('1')
 export const dim = wrap('2')
@@ -51,6 +65,10 @@ const HAND_W = 34
 
 /** Print the Lattice logo. Block art when rich; a plain wordmark otherwise. */
 export function banner(version) {
+  if (sink) {
+    sink.setHeader({ version: version ?? sink.version })
+    return
+  }
   const tag = version ? `  ${version}` : ''
   if (!(color && unicode)) {
     console.log(`\n  ${bold('LATTICE PARTNERS')}${gray('   standards' + tag)}\n`)
@@ -68,17 +86,18 @@ export function banner(version) {
 
 /** Styled status lines. */
 export const step = {
-  ok: (m) => console.log(`  ${green(S.ok)} ${m}`),
-  info: (m) => console.log(`  ${cyan(S.info)} ${m}`),
-  warn: (m) => console.log(`  ${yellow(S.warn)} ${m}`),
-  err: (m) => console.error(`  ${red(S.err)} ${m}`),
-  note: (m) => console.log(`    ${gray(m)}`),
+  ok: (m) => (sink ? sink.log('ok', m) : console.log(`  ${green(S.ok)} ${m}`)),
+  info: (m) => (sink ? sink.log('info', m) : console.log(`  ${cyan(S.info)} ${m}`)),
+  warn: (m) => (sink ? sink.log('warn', m) : console.log(`  ${yellow(S.warn)} ${m}`)),
+  err: (m) => (sink ? sink.log('err', m) : console.error(`  ${red(S.err)} ${m}`)),
+  note: (m) => (sink ? sink.log('note', m) : console.log(`    ${gray(m)}`)),
 }
 
 const FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏']
 
 /** A spinner that animates on a TTY and always logs a final status line. */
 export function spinner(text) {
+  if (sink) return sink.spinner(text)
   let timer = null
   let i = 0
   if (color) {
@@ -102,6 +121,10 @@ const stripAnsi = (s) => s.replace(/\x1b\[[0-9;]*m/g, '')
 
 /** A rounded box around a title and rows (ANSI-width aware). */
 export function box(title, rows) {
+  if (sink) {
+    sink.setPanel(title, rows)
+    return
+  }
   const width = Math.max(stripAnsi(title).length, ...rows.map((r) => stripAnsi(r).length))
   const bar = S.h.repeat(width + 2)
   const pad = (r) => r + ' '.repeat(width - stripAnsi(r).length)

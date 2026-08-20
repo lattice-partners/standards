@@ -25,11 +25,11 @@ Before you start, install:
 Get the `lattice` command on your PATH:
 
 ```bash
-npm i -g github:lattice-partners/standards#v0.6.0
+npm i -g github:lattice-partners/standards#v0.6.1
 ```
 
 Or skip the install and prefix any command with
-`npx github:lattice-partners/standards#v0.6.0`.
+`npx github:lattice-partners/standards#v0.6.1`.
 
 ### Set up a new project (greenfield)
 
@@ -155,7 +155,7 @@ For a library or service that is not a web app:
 ```bash
 lattice init my-lib --stack=minimal
 cd my-lib
-npm i -D github:lattice-partners/standards#v0.6.0
+npm i -D github:lattice-partners/standards#v0.6.1
 ```
 
 The minimal template ships no root `package.json`, so there is no `prepare`
@@ -168,7 +168,7 @@ Non-destructive overlay:
 
 ```bash
 lattice adopt .
-npm i -D github:lattice-partners/standards#v0.6.0
+npm i -D github:lattice-partners/standards#v0.6.1
 ```
 
 `adopt` injects a marked block into the existing `AGENTS.md` and leaves the rest
@@ -196,9 +196,9 @@ is structured this way.
 
 ### Day to day
 
-Run `lattice` in the repo to open the interactive shell: a home screen with the
-repo's standards status and a menu you work through (check, sync, doctor,
-verify, ticket, release, docs). Or use the commands directly:
+Run `lattice` in the repo to open a full-screen shell: status for this project
+and a menu that redraws in place (check, sync, doctor, verify, ticket, release,
+docs). Or use the commands directly:
 
 ```bash
 lattice ticket MIN-155   # start a ticket: branch off dev, named after the ticket
@@ -293,6 +293,9 @@ Projects pick the change up when they bump their pin and run `lattice sync`.
 ---
 
 ## Status
+
+v0.6.1 is a full-screen interactive CLI: the shell, init, and setup wizard redraw
+in place instead of scrolling a transcript.
 
 v0.6.0 makes `lattice init` produce a working repo: git bootstrap, `.env.local`,
 hooks that never break `npm install`, a real `doctor` pre-flight, one correct

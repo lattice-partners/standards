@@ -38,6 +38,7 @@ import {
 import * as ui from './ui.js'
 import { text, select, confirm, Cancelled } from './prompts.js'
 import { isRepo, configGet, configSet, initRepo, commitAll, createBranch } from './git.js'
+import { withScreen, currentScreen, screenDepth } from './screen.js'
 
 const POSTURE_CHOICES = [
   { label: 'Greenfield', value: 'greenfield', hint: 'Lattice owns the stack' },
@@ -69,74 +70,92 @@ export async function init(opts = {}) {
   let posture = opts.posture
   let stack = normalizeStack(opts.stack)
   let tracker = opts.tracker
-  if (ui.interactive) {
-    ui.banner(standardsVersion())
-    ui.step.info(`New project in ${ui.bold(here(target))}`)
-    try {
-      if (!name) name = await text('Project name', { defaultValue: basename(target) })
-      if (!posture) posture = await select('Engagement posture', POSTURE_CHOICES)
-      if (!stack && normalizePosture(posture) === 'greenfield') {
-        stack = await select('Scaffold', STACK_CHOICES)
-      }
-      if (tracker === undefined) tracker = await text('Ticket prefix (blank for none)', { defaultValue: '' })
-    } catch (err) {
-      if (err instanceof Cancelled) return cancel()
-      throw err
+
+  const run = async () => {
+    const screen = currentScreen()
+    if (screen) {
+      screen.setHeader({
+        title: 'lattice init',
+        version: standardsVersion(),
+        context: here(target),
+        subtitle: `New project in ${here(target)}`,
+      })
     }
-    console.log('')
-  }
-
-  const version = standardsVersion()
-  const post = normalizePosture(posture ?? 'greenfield')
-  const projectName = name || basename(target)
-  const track = normalizeTracker(tracker)
-  // Only a greenfield project gets a scaffold; a guest repo keeps its own.
-  const chosenStack = post === 'greenfield' ? (stack ?? STACKS[0]) : null
-
-  const sp = ui.spinner('vendoring core standard')
-  const docs = vendorCore(target)
-  sp.stop(`vendored ${docs.length} core docs to ${ui.gray(VENDOR_DIR + '/')}`)
-
-  if (chosenStack && chosenStack !== 'minimal') {
-    const sd = vendorStack(target)
-    if (sd.length) ui.step.ok(`vendored ${sd.length} stack doc(s)`)
-  }
-
-  fs.writeFileSync(
-    agentsPath,
-    agentsMd({ name: projectName, version, posture: post, stack: chosenStack, tracker: track }),
-  )
-  ui.step.ok(`wrote ${ui.gray('AGENTS.md')} (posture: ${post}${chosenStack ? `, stack: ${chosenStack}` : ''})`)
-  ui.step.ok(linkClaudeMd(target) ? `linked ${ui.gray('CLAUDE.md')} ${ui.S.arrow} AGENTS.md` : 'CLAUDE.md exists; left untouched')
-  if (seedMemory(target)) ui.step.ok(`seeded ${ui.gray('memory/')} from template`)
-
-  if (chosenStack) {
-    const files = scaffoldStack(target, chosenStack, { PROJECT_NAME: projectName })
-    if (files.length) ui.step.ok(`scaffolded ${files.length} files (${chosenStack})`)
-  }
-
-  if (post === 'greenfield') bootstrapRepo(target, version)
-
-  if (ui.interactive && post === 'greenfield') {
-    console.log('')
-    try {
-      if (await confirm('Run the setup wizard now?', true)) {
-        const { setup } = await import('./setup.js')
-        return setup({ dir: target })
+    if (ui.interactive) {
+      try {
+        if (!name) name = await text('Project name', { defaultValue: basename(target) })
+        if (!posture) posture = await select('Engagement posture', POSTURE_CHOICES)
+        if (!stack && normalizePosture(posture) === 'greenfield') {
+          stack = await select('Scaffold', STACK_CHOICES)
+        }
+        if (tracker === undefined) tracker = await text('Ticket prefix (blank for none)', { defaultValue: '' })
+      } catch (err) {
+        if (err instanceof Cancelled) return cancel()
+        throw err
       }
-    } catch (err) {
-      if (err instanceof Cancelled) return cancel()
-      throw err
     }
+
+    const version = standardsVersion()
+    const post = normalizePosture(posture ?? 'greenfield')
+    const projectName = name || basename(target)
+    const track = normalizeTracker(tracker)
+    const chosenStack = post === 'greenfield' ? (stack ?? STACKS[0]) : null
+
+    const sp = ui.spinner('vendoring core standard')
+    const docs = vendorCore(target)
+    sp.stop(`vendored ${docs.length} core docs to ${ui.gray(VENDOR_DIR + '/')}`)
+
+    if (chosenStack && chosenStack !== 'minimal') {
+      const sd = vendorStack(target)
+      if (sd.length) ui.step.ok(`vendored ${sd.length} stack doc(s)`)
+    }
+
+    fs.writeFileSync(
+      agentsPath,
+      agentsMd({ name: projectName, version, posture: post, stack: chosenStack, tracker: track }),
+    )
+    ui.step.ok(`wrote ${ui.gray('AGENTS.md')} (posture: ${post}${chosenStack ? `, stack: ${chosenStack}` : ''})`)
+    ui.step.ok(linkClaudeMd(target) ? `linked ${ui.gray('CLAUDE.md')} ${ui.S.arrow} AGENTS.md` : 'CLAUDE.md exists; left untouched')
+    if (seedMemory(target)) ui.step.ok(`seeded ${ui.gray('memory/')} from template`)
+
+    if (chosenStack) {
+      const files = scaffoldStack(target, chosenStack, { PROJECT_NAME: projectName })
+      if (files.length) ui.step.ok(`scaffolded ${files.length} files (${chosenStack})`)
+    }
+
+    if (post === 'greenfield') bootstrapRepo(target, version)
+
+    if (ui.interactive && post === 'greenfield') {
+      try {
+        if (await confirm('Run the setup wizard now?', true)) {
+          const { setup } = await import('./setup.js')
+          const code = await setup({ dir: target })
+          if (screen && screenDepth() === 1) await screen.wait('enter to exit')
+          return code
+        }
+      } catch (err) {
+        if (err instanceof Cancelled) return cancel()
+        throw err
+      }
+    }
+
+    ui.box(`lattice-standards@${version}  ${ui.S.dot}  ${projectName}`, [
+      ui.bold('Next steps'),
+      `${ui.gray('1.')} cd ${here(target)}`,
+      `${ui.gray('2.')} ${ui.cyan('lattice setup')}  ${ui.gray('walk through the rest')}`,
+      `${ui.gray('3.')} ${ui.cyan('npm run dev')}  ${ui.gray('when setup passes')}`,
+    ])
+    if (screen && screenDepth() === 1) await screen.wait('enter to exit')
+    return 0
   }
 
-  ui.box(`lattice-standards@${version}  ${ui.S.dot}  ${projectName}`, [
-    ui.bold('Next steps'),
-    `${ui.gray('1.')} cd ${here(target)}`,
-    `${ui.gray('2.')} ${ui.cyan('lattice setup')}  ${ui.gray('walk through the rest')}`,
-    `${ui.gray('3.')} ${ui.cyan('npm run dev')}  ${ui.gray('when setup passes')}`,
-  ])
-  return 0
+  if (!ui.interactive) return run()
+  try {
+    return await withScreen(run)
+  } catch (err) {
+    if (err instanceof Cancelled) return cancel()
+    throw err
+  }
 }
 
 /** Overlay the standard onto an existing repo, non-destructively. */
@@ -148,48 +167,65 @@ export async function adopt(opts = {}) {
   }
 
   let posture = opts.posture
-  if (ui.interactive) {
-    ui.banner(standardsVersion())
-    ui.step.info(`Adopting the standard in ${ui.bold(here(target))}`)
-    try {
-      if (!posture) posture = await select('Engagement posture', POSTURE_CHOICES)
-    } catch (err) {
-      if (err instanceof Cancelled) return cancel()
-      throw err
+  const run = async () => {
+    const screen = currentScreen()
+    if (screen) {
+      screen.setHeader({
+        title: 'lattice adopt',
+        version: standardsVersion(),
+        context: here(target),
+        subtitle: `Adopting the standard in ${here(target)}`,
+      })
     }
-    console.log('')
+    if (ui.interactive) {
+      try {
+        if (!posture) posture = await select('Engagement posture', POSTURE_CHOICES)
+      } catch (err) {
+        if (err instanceof Cancelled) return cancel()
+        throw err
+      }
+    }
+
+    const version = standardsVersion()
+    const post = normalizePosture(posture ?? 'guest')
+
+    const sp = ui.spinner('vendoring core standard')
+    const docs = vendorCore(target)
+    sp.stop(`vendored ${docs.length} core docs to ${ui.gray(VENDOR_DIR + '/')} (base@${version})`)
+
+    const agentsPath = join(target, 'AGENTS.md')
+    if (fs.existsSync(agentsPath)) {
+      const existing = fs.readFileSync(agentsPath, 'utf8')
+      // A guest repo keeps whatever it already declared; adopt never re-decides.
+      const block = latticeBlock({
+        version,
+        posture: readPosture(existing) ?? post,
+        stack: readStack(existing),
+        tracker: readTracker(existing),
+      })
+      fs.writeFileSync(agentsPath, upsertBlock(existing, block))
+      ui.step.ok(`updated the Lattice block in ${ui.gray('AGENTS.md')} (rest left intact)`)
+    } else {
+      fs.writeFileSync(agentsPath, agentsMd({ name: opts.name ?? basename(target), version, posture: post }))
+      ui.step.ok(`created ${ui.gray('AGENTS.md')}`)
+    }
+    ui.step.ok(linkClaudeMd(target) ? `linked ${ui.gray('CLAUDE.md')} ${ui.S.arrow} AGENTS.md` : 'CLAUDE.md exists; left untouched')
+
+    ui.box(`lattice-standards@${version}`, [
+      ui.bold('Next step'),
+      `${ui.gray('run')} ${ui.cyan(installHint())}`,
+    ])
+    if (screen && screenDepth() === 1) await screen.wait('enter to exit')
+    return 0
   }
 
-  const version = standardsVersion()
-  const post = normalizePosture(posture ?? 'guest')
-
-  const sp = ui.spinner('vendoring core standard')
-  const docs = vendorCore(target)
-  sp.stop(`vendored ${docs.length} core docs to ${ui.gray(VENDOR_DIR + '/')} (base@${version})`)
-
-  const agentsPath = join(target, 'AGENTS.md')
-  if (fs.existsSync(agentsPath)) {
-    const existing = fs.readFileSync(agentsPath, 'utf8')
-    // A guest repo keeps whatever it already declared; adopt never re-decides.
-    const block = latticeBlock({
-      version,
-      posture: readPosture(existing) ?? post,
-      stack: readStack(existing),
-      tracker: readTracker(existing),
-    })
-    fs.writeFileSync(agentsPath, upsertBlock(existing, block))
-    ui.step.ok(`updated the Lattice block in ${ui.gray('AGENTS.md')} (rest left intact)`)
-  } else {
-    fs.writeFileSync(agentsPath, agentsMd({ name: opts.name ?? basename(target), version, posture: post }))
-    ui.step.ok(`created ${ui.gray('AGENTS.md')}`)
+  if (!ui.interactive) return run()
+  try {
+    return await withScreen(run)
+  } catch (err) {
+    if (err instanceof Cancelled) return cancel()
+    throw err
   }
-  ui.step.ok(linkClaudeMd(target) ? `linked ${ui.gray('CLAUDE.md')} ${ui.S.arrow} AGENTS.md` : 'CLAUDE.md exists; left untouched')
-
-  ui.box(`lattice-standards@${version}`, [
-    ui.bold('Next step'),
-    `${ui.gray('run')} ${ui.cyan(installHint())}`,
-  ])
-  return 0
 }
 
 /** Update the vendored standard to the installed version. */

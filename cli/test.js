@@ -13,6 +13,7 @@ import { init, adopt, sync, check, hooks } from './commands.js'
 import { preCommit, commitMsg } from './hooks.js'
 import { ticket, releaseBody, setEnvLocalValue, envKeyHint, emptyEnvKeys } from './workflow.js'
 import { setup, normalizeRemoteUrl } from './setup.js'
+import { clip, padLine, spread, visibleWidth } from './screen.js'
 import { standardsVersion, status, VENDOR_DIR, HOOKS_PATH } from './lib.js'
 import { git, configGet, refExists } from './git.js'
 
@@ -448,6 +449,13 @@ await step('emptyEnvKeys lists keys still blank in .env.local', async () => {
   write(d, '.env.example', 'API_URL=\nFOO=\n')
   write(d, '.env.local', 'API_URL=http://localhost:3001\nFOO=\n')
   assert.deepEqual(emptyEnvKeys(d), ['FOO'])
+})
+
+await step('screen clip and spread fit a terminal width', () => {
+  assert.equal(visibleWidth('\x1b[96mhello\x1b[0m'), 5)
+  assert.equal(clip('abcdefghij', 6), 'abcde…')
+  assert.equal(padLine('hi', 5), 'hi   ')
+  assert.equal(spread('left', 'right', 14), 'left     right')
 })
 
 await step('ticket branches from dev', () => {

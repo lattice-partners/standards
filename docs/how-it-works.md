@@ -54,7 +54,7 @@ There is no registry publish. A project pins the standard by installing straight
 from the GitHub tag:
 
 ```bash
-npm i -D github:lattice-partners/standards#v0.6.0
+npm i -D github:lattice-partners/standards#v0.6.1
 ```
 
 npm handles the pinning. When the CLI runs, it copies the `core/` docs bundled
@@ -85,7 +85,7 @@ my-app/
 
 ```markdown
 <!-- lattice:standards -->
-Standards: lattice-standards@0.6.0  (vendored in .lattice/)
+Standards: lattice-standards@0.6.1  (vendored in .lattice/)
 Engagement posture: greenfield
 
 Read the vendored standard before working here:
@@ -204,10 +204,11 @@ tempting.
 The same binary behaves differently depending on whether it is attached to a
 terminal:
 
-- **On a TTY** - `lattice` with no command opens the interactive shell: the hand
-  logo, a home screen showing status (initialized, version, drift), and a
-  context-aware menu. `init` and `adopt` prompt for anything not passed as a
-  flag. `setup` walks through GitHub, npm install, and env vars step by step.
+- **On a TTY** - `lattice` with no command opens a full-screen shell: status
+  (initialized, version, drift) and a menu that redraws in place. `init`,
+  `adopt`, and `setup` use the same full-screen session so prompts do not
+  scroll a transcript. `setup` walks through GitHub, npm install, and env vars
+  step by step.
 - **No TTY (CI, coding agents)** - no shell, no prompts. Subcommands run from
   flags and exit codes; bare `lattice` prints help and exits non-zero.
 
@@ -234,7 +235,7 @@ drifted from the version it pinned.
 release tags. Projects can also reference the action directly:
 
 ```yaml
-- uses: lattice-partners/standards/ci/actions/standards-check@v0.6.0
+- uses: lattice-partners/standards/ci/actions/standards-check@v0.6.1
 ```
 
 ## CLI internals
@@ -247,6 +248,7 @@ Zero runtime dependencies. Everything is Node built-ins.
 | `cli/commands.js` | `init`, `adopt`, `sync`, `check`, `hooks install` |
 | `cli/workflow.js` | `ticket`, `release`, `doctor`, `verify` |
 | `cli/setup.js` | Interactive new-project setup wizard |
+| `cli/screen.js` | Full-screen alternate-buffer session |
 | `cli/hooks.js` | The hook bodies: the pre-commit gate and commit-msg rules |
 | `cli/git.js` | Thin wrappers over the git CLI |
 | `cli/lib.js` | Vendoring, `AGENTS.md` generation, and `status()` |

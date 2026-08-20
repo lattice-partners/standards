@@ -1,8 +1,8 @@
-// The interactive `lattice` shell: a home screen with this repo's standards
-// status and a context-aware action menu. Runs an action, waits, returns home.
-// Only launched on a TTY; the one-shot subcommands remain the agent/CI contract.
+// The interactive `lattice` shell: a full-screen home with this repo's
+// standards status and a context-aware action menu. Runs an action, waits,
+// returns home. Only launched on a TTY; one-shot subcommands remain the
+// agent/CI contract.
 
-import readline from 'node:readline'
 import { spawn } from 'node:child_process'
 import { resolve, join } from 'node:path'
 import fs from 'node:fs'
@@ -12,28 +12,10 @@ import { select, text, Cancelled } from './prompts.js'
 import { init, adopt, sync, check } from './commands.js'
 import { doctor, verify, ticket, release } from './workflow.js'
 import { setup } from './setup.js'
+import { withScreen, currentScreen } from './screen.js'
 
 const home = process.env.HOME || ''
 const tilde = (p) => (home && p.startsWith(home) ? '~' + p.slice(home.length) : p)
-
-function renderStatus(target, st) {
-  const row = (k, v) => console.log(`  ${ui.gray(k.padEnd(9))} ${v}`)
-  console.log(`  ${ui.bold('standards')}  ${ui.gray(ui.S.dot)}  ${ui.gray(tilde(target))}`)
-  if (st.initialized) {
-    const posture = st.posture ? `  ${ui.gray('(' + st.posture + ')')}` : ''
-    row('status', `${ui.green('initialized')}  ${ui.gray(ui.S.dot)}  base@${st.vendored}${posture}`)
-    const drift =
-      st.drift === 'none'
-        ? ui.green('none')
-        : st.drift === 'behind'
-          ? ui.yellow(`behind installed @${st.installed}`)
-          : ui.yellow('locally edited')
-    row('drift', drift)
-  } else {
-    row('status', `${ui.gray('not initialized')}  ${ui.gray(ui.S.dot)}  @${st.installed} installed`)
-  }
-  console.log(`\n  ${ui.dim('up/down move  ' + ui.S.dot + '  enter select  ' + ui.S.dot + '  q quit')}\n`)
-}
 
 function menu(st) {
   const items = st.initialized
@@ -53,6 +35,27 @@ function menu(st) {
     { label: 'quit', value: 'quit', hint: 'exit' },
   )
   return items
+}
+
+function paintHome(target, st) {
+  const s = currentScreen()
+  if (!s) return
+  s.resetView()
+  const drift =
+    !st.initialized
+      ? `not initialized  ${ui.S.dot}  @${st.installed} installed`
+      : st.drift === 'none'
+        ? `initialized  ${ui.S.dot}  base@${st.vendored}`
+        : st.drift === 'behind'
+          ? `initialized  ${ui.S.dot}  behind @${st.installed}`
+          : `initialized  ${ui.S.dot}  locally edited`
+  const posture = st.posture ? `  ${ui.S.dot}  ${st.posture}` : ''
+  s.setHeader({
+    title: 'lattice',
+    version: st.installed,
+    context: tilde(target),
+    subtitle: drift + posture,
+  })
 }
 
 async function runAction(action, target) {
@@ -91,54 +94,60 @@ async function openDoc(target) {
   await page(file)
 }
 
-// Show a file in the user's pager, falling back to printing it.
 function page(path) {
   return new Promise((res) => {
+    const screen = currentScreen()
+    if (screen) screen.suspend()
     const pager = process.env.PAGER || 'less'
     const child = spawn(pager, ['-R', path], { stdio: 'inherit' })
+    const done = () => {
+      if (screen) screen.resume()
+      res()
+    }
     child.on('error', () => {
+      if (screen) {
+        screen.log('info', fs.readFileSync(path, 'utf8'))
+        screen.resume()
+        res()
+        return
+      }
       console.log('\n' + fs.readFileSync(path, 'utf8'))
       res()
     })
-    child.on('close', () => res())
-  })
-}
-
-function pause() {
-  return new Promise((res) => {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
-    rl.question(ui.dim('  press enter to continue '), () => {
-      rl.close()
-      res()
-    })
+    child.on('close', done)
   })
 }
 
 /** Run the interactive shell loop against dir (default cwd). */
 export async function shell(dir = '.') {
   const target = resolve(process.cwd(), dir)
-  for (;;) {
-    console.clear()
-    ui.banner(standardsVersion())
-    const st = status(target)
-    renderStatus(target, st)
+  return withScreen(async () => {
+    for (;;) {
+      const st = status(target)
+      paintHome(target, st)
+      let action
+      try {
+        action = await select('What would you like to do?', menu(st))
+      } catch (err) {
+        if (err instanceof Cancelled) break
+        throw err
+      }
+      if (action === 'quit') break
 
-    let action
-    try {
-      action = await select('What would you like to do?', menu(st))
-    } catch (err) {
-      if (err instanceof Cancelled) break
-      throw err
+      const s = currentScreen()
+      s.resetView()
+      s.setHeader({
+        title: `lattice ${action}`,
+        version: standardsVersion(),
+        context: tilde(target),
+      })
+      try {
+        await runAction(action, target)
+      } catch (err) {
+        if (!(err instanceof Cancelled)) s.log('err', err.message)
+        else continue
+      }
+      await s.wait('enter to return to the menu')
     }
-    if (action === 'quit') break
-
-    console.log('')
-    try {
-      await runAction(action, target)
-    } catch (err) {
-      if (!(err instanceof Cancelled)) ui.step.err(err.message)
-    }
-    await pause()
-  }
-  console.log(`\n  ${ui.gray('bye')}\n`)
+  })
 }

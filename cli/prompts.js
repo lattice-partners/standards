@@ -1,24 +1,22 @@
-// Interactive prompts over node:readline. Used only when ui.interactive is
-// true; commands stay fully non-interactive when driven by flags or in CI.
+// Interactive prompts. Used only when ui.interactive is true; commands stay
+// fully non-interactive when driven by flags or in CI. When a full-screen
+// session is active, these paint in place; otherwise they append to stdout.
 
 import readline from 'node:readline'
 import { stdin, stdout } from 'node:process'
-import { S, cyan, gray, bold } from './ui.js'
+import { S, cyan, gray, bold, Cancelled } from './ui.js'
+import { currentScreen } from './screen.js'
 
-/** Thrown when the user cancels a prompt (Ctrl-C or Esc). */
-export class Cancelled extends Error {
-  constructor() {
-    super('cancelled')
-    this.name = 'Cancelled'
-  }
-}
+export { Cancelled }
 
 /** Free-text prompt with an optional default. */
-export function text(question, { defaultValue = '' } = {}) {
+export function text(question, { defaultValue = '', hint = '' } = {}) {
+  const screen = currentScreen()
+  if (screen) return screen.text(question, { defaultValue, hint })
   return new Promise((resolve, reject) => {
     const rl = readline.createInterface({ input: stdin, output: stdout })
-    const hint = defaultValue ? gray(` (${defaultValue})`) : ''
-    rl.question(`  ${cyan('?')} ${bold(question)}${hint} ${gray(S.bullet)} `, (answer) => {
+    const shown = defaultValue ? gray(` (${defaultValue})`) : ''
+    rl.question(`  ${cyan('?')} ${bold(question)}${shown} ${gray(S.bullet)} `, (answer) => {
       rl.close()
       resolve(answer.trim() || defaultValue)
     })
@@ -26,11 +24,14 @@ export function text(question, { defaultValue = '' } = {}) {
       rl.close()
       reject(new Cancelled())
     })
+    void hint
   })
 }
 
 /** Yes/no prompt. */
 export async function confirm(question, def = true) {
+  const screen = currentScreen()
+  if (screen) return screen.confirm(question, def)
   const answer = await text(`${question} ${gray(def ? '[Y/n]' : '[y/N]')}`)
   if (!answer) return def
   return /^y(es)?$/i.test(answer)
@@ -38,6 +39,8 @@ export async function confirm(question, def = true) {
 
 /** Arrow-key single select. options: [{ label, value, hint }]. */
 export function select(question, options) {
+  const screen = currentScreen()
+  if (screen) return screen.select(question, options)
   return new Promise((resolve, reject) => {
     let idx = 0
 
