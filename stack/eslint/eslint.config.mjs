@@ -19,4 +19,11 @@ export default ts.config(
       eqeqeq: 'error',
     },
   },
+  {
+    // Config files sit outside every tsconfig include, so the type-aware rules
+    // cannot resolve them and error before linting anything. Lint them without
+    // type information rather than skipping them.
+    files: ['**/*.config.{js,cjs,mjs,ts,mts,cts}', '**/*.setup.{js,cjs,mjs,ts}'],
+    ...ts.configs.disableTypeChecked,
+  },
 )

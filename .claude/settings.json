@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(npm publish *)",
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.production)"
+    ],
+    "ask": ["Bash(git push *)", "Bash(git tag *)"],
+    "disableBypassPermissionsMode": "disable"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
+}

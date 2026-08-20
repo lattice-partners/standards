@@ -17,11 +17,11 @@ standard itself.
 Get the `lattice` command on your PATH:
 
 ```bash
-npm i -g github:lattice-partners/standards#v0.4.0
+npm i -g github:lattice-partners/standards#v0.5.0
 ```
 
 Or skip the install and prefix any command with
-`npx github:lattice-partners/standards#v0.4.0`.
+`npx github:lattice-partners/standards#v0.5.0`.
 
 ### Set up a project
 
@@ -30,14 +30,27 @@ New (greenfield) project - Lattice owns the stack:
 ```bash
 lattice init my-app
 cd my-app
-npm i -D github:lattice-partners/standards#v0.4.0   # pin it for the project and CI
+npm install
+```
+
+That scaffolds the full Lattice stack: an npm workspaces monorepo with
+`apps/web` (Next.js, Tailwind, shadcn/ui) and `apps/api` (Next.js route
+handlers), Supabase with RLS, Clerk, and Vercel config. The standards pin is
+already in the generated `package.json`, and `npm install` switches the git
+hooks on.
+
+For a library or service that is not a web app, use the config-only scaffold:
+
+```bash
+lattice init my-lib --stack=minimal
+npm i -D github:lattice-partners/standards#v0.5.0   # pin it for the project and CI
 ```
 
 Existing (client) repo - non-destructive overlay:
 
 ```bash
 lattice adopt .
-npm i -D github:lattice-partners/standards#v0.4.0
+npm i -D github:lattice-partners/standards#v0.5.0
 ```
 
 `adopt` injects a marked block into the existing `AGENTS.md` and leaves the rest
@@ -52,6 +65,13 @@ of the repo alone. It does not impose the Lattice stack config on a client repo.
   architecture, and context around it.
 - `CLAUDE.md` - a symlink to `AGENTS.md`, so Claude Code and every
   AGENTS.md-aware tool read the identical instructions.
+- `.lattice/hooks/` - git hooks, switched on by `npm install`. They run the full
+  gate before every commit and block the things a reviewer cannot catch: secrets,
+  a secret in a `NEXT_PUBLIC_` variable, a migration that drops data or disables
+  RLS, and a branch that would never link to its ticket.
+- `.claude/settings.json` - guardrails for AI agents working in the repo. Denies
+  the irreversible commands outright and stops anyone switching permission
+  prompts off.
 
 See [how it works](docs/how-it-works.md) for the anatomy of the block and why it
 is structured this way.
@@ -63,9 +83,17 @@ repo's standards status and a menu you work through. Or use the commands
 directly:
 
 ```bash
-lattice check    # verify conformance (exit non-zero on drift; use in CI)
-lattice sync     # re-vendor .lattice/ to the installed version
+lattice ticket MIN-155   # start a ticket: branch off dev, named after the ticket
+lattice verify           # run every check and say whether it is safe to ship
+lattice doctor           # check this machine is set up correctly
+lattice release          # print the dev -> main pull request body
+lattice check            # verify conformance (exit non-zero on drift; use in CI)
+lattice sync             # re-vendor .lattice/ to the installed version
 ```
+
+`verify` and `doctor` are written to be read by anyone, not just engineers. They
+answer "is this safe to ship?" and "why does nothing work on my machine?" in
+plain language.
 
 With no terminal attached (CI, coding agents), there is no shell or prompt:
 commands run from flags and exit codes, and bare `lattice` prints help.
@@ -80,8 +108,24 @@ npx lattice sync
 npx lattice check
 ```
 
-`lattice init` also drops a CI workflow that runs `lattice check` on every push
-and pull request, so drift is caught automatically.
+`sync` re-vendors the standard docs, the stack baseline, and the git hooks, so a
+hook improvement made here reaches every project the same way a rule change does.
+
+`lattice init` also drops a CI workflow that runs `lattice check` on pushes to
+`main` and `dev` and on release tags. The gate itself is the pre-commit hook; CI
+is the backstop.
+
+### How work flows
+
+Ticket branches are named after the ticket and cut from `dev`. Merging into
+`dev` moves the ticket to In Review and deploys to staging; the pull request
+body stays empty because the ticket already holds the context. Releasing is a
+`dev` into `main` pull request whose body `lattice release` generates: closing
+keywords so each ticket closes on merge, then one line per shipped change.
+`main` takes direct commits for hotfixes only.
+
+The full model, including the tracker-side setup that cannot be enforced from
+the repo, is in `core/ticket-workflow.md`.
 
 ---
 
@@ -96,10 +140,11 @@ repo.
 | Path | Purpose |
 |---|---|
 | `core/` | Portable core: the stack-agnostic standard every project inherits |
-| `stack/` | Lattice TypeScript stack configs (ESLint, Prettier) |
+| `stack/` | Lattice stack: the vendored baseline, configs, and setup guides |
+| `hooks/` | Git hook shims, vendored into a project's `.lattice/hooks/` |
 | `ci/` | Reusable GitHub Actions: `standards-check` composite action + workflow |
-| `templates/` | Greenfield starter files, adopt-overlay notes, and the ADR template |
-| `cli/` | The `lattice` CLI (init / adopt / sync / check + interactive shell) |
+| `templates/` | The `next-monorepo` and `greenfield` scaffolds, plus the ADR template |
+| `cli/` | The `lattice` CLI (commands, hooks, workflow, interactive shell) |
 | `docs/` | `how-it-works.md` and the `adr/` decision records |
 | `VERSION` | Semver; projects pin to a tag |
 
@@ -130,7 +175,10 @@ Projects pick the change up when they bump their pin and run `lattice sync`.
 
 ## Status
 
-Phase 0 (portable core), the CLI (init/adopt/sync/check plus an interactive
-shell), stack configs (ESLint, Prettier), CI (composite action + workflow), and
-the greenfield template are all in place at v0.4.0. Next: brownfield stack
-adoption and richer templates.
+v0.5.0 ships the full Lattice stack: the `next-monorepo` scaffold (Next.js,
+Supabase with RLS, Clerk, Vercel), local-first enforcement through vendored git
+hooks, agent guardrails, and the Linear-driven branching model. The portable
+core, the CLI, and the config-only scaffold (`--stack=minimal`) all carry over.
+
+Next: brownfield stack adoption, and error tracking and spend caps, which are
+added per client today.
