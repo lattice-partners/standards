@@ -3,7 +3,7 @@
 Brownfield adoption is driven by the CLI, not by copying files from here:
 
 ```bash
-npx github:lattice-partners/standards#v0.7.0 adopt .
+npx github:lattice-partners/standards#v0.7.1 adopt .
 ```
 
 `lattice adopt` is non-destructive. It vendors the standard into `.lattice/`,

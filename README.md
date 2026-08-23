@@ -25,11 +25,11 @@ Before you start, install:
 Get the `lattice` command on your PATH:
 
 ```bash
-npm i -g github:lattice-partners/standards#v0.7.0
+npm i -g github:lattice-partners/standards#v0.7.1
 ```
 
 Or skip the install and prefix any command with
-`npx github:lattice-partners/standards#v0.7.0`.
+`npx github:lattice-partners/standards#v0.7.1`.
 
 ### Set up a new project (greenfield)
 
@@ -155,7 +155,7 @@ For a library or service that is not a web app:
 ```bash
 lattice init my-lib --stack=minimal
 cd my-lib
-npm i -D github:lattice-partners/standards#v0.7.0
+npm i -D github:lattice-partners/standards#v0.7.1
 ```
 
 The minimal template ships no root `package.json`, so there is no `prepare`
@@ -168,7 +168,7 @@ Non-destructive overlay:
 
 ```bash
 lattice adopt .
-npm i -D github:lattice-partners/standards#v0.7.0
+npm i -D github:lattice-partners/standards#v0.7.1
 ```
 
 `adopt` injects a marked block into the existing `AGENTS.md` and leaves the rest
@@ -293,6 +293,10 @@ Projects pick the change up when they bump their pin and run `lattice sync`.
 ---
 
 ## Status
+
+v0.7.1 fixes dev-branch recovery: `doctor` and `setup` both heal a repo whose
+initial commit never landed instead of repeating the same fatal git error, and
+`init` stops promising `npm run dev` on stacks that never ship a `dev` script.
 
 v0.7.0 makes setup self-executing and verifiable: commands run in the current
 terminal, every remediation is re-checked, provider setup is resumable, and the

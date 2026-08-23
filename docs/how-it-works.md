@@ -54,7 +54,7 @@ There is no registry publish. A project pins the standard by installing straight
 from the GitHub tag:
 
 ```bash
-npm i -D github:lattice-partners/standards#v0.7.0
+npm i -D github:lattice-partners/standards#v0.7.1
 ```
 
 npm handles the pinning. When the CLI runs, it copies the `core/` docs bundled
@@ -85,7 +85,7 @@ my-app/
 
 ```markdown
 <!-- lattice:standards -->
-Standards: lattice-standards@0.7.0  (vendored in .lattice/)
+Standards: lattice-standards@0.7.1  (vendored in .lattice/)
 Engagement posture: greenfield
 
 Read the vendored standard before working here:
@@ -235,7 +235,7 @@ drifted from the version it pinned.
 release tags. Projects can also reference the action directly:
 
 ```yaml
-- uses: lattice-partners/standards/ci/actions/standards-check@v0.7.0
+- uses: lattice-partners/standards/ci/actions/standards-check@v0.7.1
 ```
 
 ## CLI internals
