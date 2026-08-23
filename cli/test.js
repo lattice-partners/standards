@@ -13,7 +13,7 @@ import { join } from 'node:path'
 import { init, adopt, sync, check, hooks } from './commands.js'
 import { preCommit, commitMsg } from './hooks.js'
 import { ticket, releaseBody, setEnvLocalValue, envKeyHint, emptyEnvKeys, auditDoctor } from './workflow.js'
-import { setup, normalizeRemoteUrl, waitForHealth } from './setup.js'
+import { setup, stepDevBranch, normalizeRemoteUrl, waitForHealth } from './setup.js'
 import { clip, padLine, runCommandInTerminal, spread, visibleWidth } from './screen.js'
 import { standardsVersion, status, VENDOR_DIR, HOOKS_PATH } from './lib.js'
 import { git, configGet, isRepo, isRepoRoot, refExists, remoteHeads } from './git.js'
@@ -451,6 +451,17 @@ await step('setup refuses an uninitialized directory', async () => {
   assert.equal(await setup({ dir: tmp('raw') }), 1)
 })
 
+await step('setup stepDevBranch does not throw on an unborn HEAD', async () => {
+  const d = tmp('unborn-setup')
+  git(['init', '-b', 'main'], d)
+  git(['config', '--local', 'user.email', 'test@example.com'], d)
+  git(['config', '--local', 'user.name', 'Test'], d)
+  // Non-interactive: offerFixes cannot prompt, so this can only report the
+  // failure, not crash the way a direct `git branch dev` call used to.
+  assert.equal(await stepDevBranch(d), false)
+  assert.equal(refExists('dev', d), false)
+})
+
 await step('normalizeRemoteUrl accepts common GitHub paste shapes', () => {
   assert.equal(normalizeRemoteUrl('git@github.com:acme/app.git'), 'git@github.com:acme/app.git')
   assert.equal(normalizeRemoteUrl('https://github.com/acme/app'), 'https://github.com/acme/app.git')
@@ -509,6 +520,20 @@ await step('applyFix verifies the named doctor postcondition', async () => {
   assert.equal(result.ran, true)
   assert.equal(result.verified, true)
   assert.equal(isRepo(d), true)
+})
+
+await step('applyFix makes the initial commit before creating dev on an unborn HEAD', async () => {
+  const d = tmp('unborn-fix')
+  git(['init', '-b', 'main'], d)
+  git(['config', '--local', 'user.email', 'test@example.com'], d)
+  git(['config', '--local', 'user.name', 'Test'], d)
+  write(d, 'placeholder.txt', 'x\n')
+  const check = auditDoctor(d).results.find((result) => result.id === 'git-dev')
+  assert.ok(check, 'expected a git-dev finding')
+  const result = await applyFix(d, check)
+  assert.equal(result.verified, true)
+  assert.ok(refExists('dev', d))
+  assert.equal(git(['rev-list', '--count', 'HEAD'], d), '1')
 })
 
 await step('secret redaction masks provider tokens', () => {

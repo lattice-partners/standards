@@ -139,12 +139,15 @@ export async function init(opts = {}) {
       }
     }
 
-    ui.box(`lattice-standards@${version}  ${ui.S.dot}  ${projectName}`, [
+    const nextSteps = [
       ui.bold('Next steps'),
       `${ui.gray('1.')} cd ${here(target)}`,
       `${ui.gray('2.')} ${ui.cyan('lattice setup')}  ${ui.gray('walk through the rest')}`,
-      `${ui.gray('3.')} ${ui.cyan('npm run dev')}  ${ui.gray('when setup passes')}`,
-    ])
+    ]
+    if (chosenStack === 'next-monorepo') {
+      nextSteps.push(`${ui.gray('3.')} ${ui.cyan('npm run dev')}  ${ui.gray('when setup passes')}`)
+    }
+    ui.box(`lattice-standards@${version}  ${ui.S.dot}  ${projectName}`, nextSteps)
     if (screen && screenDepth() === 1) await screen.wait('enter to exit')
     return 0
   }
@@ -378,11 +381,17 @@ function bootstrapRepo(target, version) {
   try {
     commitAll(target, `chore: scaffold from lattice-standards@${version}`, { noVerify: true })
     ui.step.ok(`initial commit on ${ui.gray('main')}`)
-    createBranch('dev', target)
-    ui.step.ok(`created ${ui.gray('dev')} branch`)
-    installHooks(target, { quiet: false })
   } catch (err) {
     ui.step.warn(`could not create the initial commit: ${err.message}`)
-    ui.step.warn('Set git user.name and user.email, then commit manually and run: lattice hooks install')
+    ui.step.warn('Set git user.name and user.email, then run: lattice doctor')
+    return
   }
+
+  try {
+    createBranch('dev', target)
+    ui.step.ok(`created ${ui.gray('dev')} branch`)
+  } catch (err) {
+    ui.step.warn(`could not create the dev branch: ${err.message}`)
+  }
+  installHooks(target, { quiet: false })
 }

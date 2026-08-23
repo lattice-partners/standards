@@ -5,7 +5,7 @@ import fs from 'node:fs'
 import { join } from 'node:path'
 import * as ui from './ui.js'
 import { confirm, select, text } from './prompts.js'
-import { git, initRepo, createBranch, normalizeRemoteUrl, configGet, configSet, isRepo } from './git.js'
+import { git, initRepo, createBranch, commitAll, refExists, normalizeRemoteUrl, configGet, configSet, isRepo } from './git.js'
 import { HOOKS_PATH, vendorHooks } from './lib.js'
 import { runInTerminal } from './screen.js'
 import { openBrowser } from './services.js'
@@ -27,6 +27,9 @@ export async function applyFix(target, check) {
         initRepo(target)
         break
       case 'git-dev':
+        if (!refExists('HEAD', target)) {
+          commitAll(target, 'chore: initial commit', { noVerify: true })
+        }
         createBranch('dev', target)
         break
       case 'git-email': {

@@ -13,7 +13,6 @@ import {
   git,
   gitOk,
   isRepo,
-  refExists,
   configGet,
   configSet,
   normalizeRemoteUrl,
@@ -396,10 +395,13 @@ async function stepEnvLocal(target, states) {
   return good
 }
 
-async function stepDevBranch(target) {
-  if (!isRepo(target) || refExists('dev', target)) return true
-  git(['branch', 'dev'], target)
-  return true
+export async function stepDevBranch(target) {
+  if (!isRepo(target)) return true
+  const check = auditDoctor(target).results.find((result) => result.id === 'git-dev')
+  if (!check || check.good) return true
+  const { offerFixes } = await import('./fix.js')
+  const after = await offerFixes(target, [check])
+  return after.find((result) => result.id === 'git-dev')?.good ?? false
 }
 
 async function stepHooks(target) {
