@@ -25,11 +25,40 @@ Before you start, install:
 Get the `lattice` command on your PATH:
 
 ```bash
-npm i -g github:lattice-partners/standards#v0.7.1
+npm i -g github:lattice-partners/standards#v0.8.0
 ```
 
 Or skip the install and prefix any command with
-`npx github:lattice-partners/standards#v0.7.1`.
+`npx github:lattice-partners/standards#v0.8.0`.
+
+### Use Weave in Cursor
+
+Weave is the Cursor plugin generated from the same `core/` files the CLI
+vendors. It does not replace the CLI or Git hooks.
+
+**Local smoke test** (this checkout):
+
+```bash
+mkdir -p ~/.cursor/plugins/local
+ln -sfn "$(pwd)/plugins/weave" ~/.cursor/plugins/local/weave
+```
+
+Then reload Cursor (`Developer: Reload Window`) and confirm Weave rules,
+skills, commands, agents, and hooks are visible.
+
+**Team marketplace** (Cursor dashboard):
+
+1. Import this GitHub repository as a team marketplace. Source for Weave is
+   `plugins/weave`.
+2. Leave the plugin **Default Off** for a pilot. Enable it for a small group.
+3. After the Cursor GitHub App is connected, turn on Auto Refresh so tagged
+   updates land without a manual re-import.
+4. Reindex at most once every ten minutes if a refresh looks stale.
+5. Promote Weave to **Required** once the pilot holds.
+
+There is no documented way to pin each teammate to an immutable plugin
+version. The git tag is the pin for the CLI; Cursor loads whatever the
+marketplace currently serves.
 
 ### Set up a new project (greenfield)
 
@@ -155,7 +184,7 @@ For a library or service that is not a web app:
 ```bash
 lattice init my-lib --stack=minimal
 cd my-lib
-npm i -D github:lattice-partners/standards#v0.7.1
+npm i -D github:lattice-partners/standards#v0.8.0
 ```
 
 The minimal template ships no root `package.json`, so there is no `prepare`
@@ -168,7 +197,7 @@ Non-destructive overlay:
 
 ```bash
 lattice adopt .
-npm i -D github:lattice-partners/standards#v0.7.1
+npm i -D github:lattice-partners/standards#v0.8.0
 ```
 
 `adopt` injects a marked block into the existing `AGENTS.md` and leaves the rest
@@ -260,6 +289,8 @@ repo.
 |---|---|
 | `core/` | Portable core: the stack-agnostic standard every project inherits |
 | `stack/` | Lattice stack: the vendored baseline, configs, and setup guides |
+| `plugins/weave/` | Cursor plugin generated from `core/` and `stack/stack-baseline.md` |
+| `.cursor-plugin/` | Private marketplace that points at Weave |
 | `hooks/` | Git hook shims, vendored into a project's `.lattice/hooks/` |
 | `ci/` | Reusable GitHub Actions: `standards-check` composite action + workflow |
 | `templates/` | The `next-monorepo` and `greenfield` scaffolds, plus the ADR template |
@@ -278,10 +309,12 @@ repo.
 ### Make a change
 
 1. Edit the relevant file in `core/` (or `stack/`, `ci/`, `templates/`).
-2. Run `npm run lint:md` and `npm test`.
-3. For a material change, add an ADR (copy `templates/ADR.md` into `docs/adr/`)
-   and bump `VERSION`.
-4. Commit (Conventional Commits, no AI attribution), then tag and push:
+2. If canonical prose changed, run `npm run build:weave` so plugin rules stay
+   in sync.
+3. Run `npm run lint:md` and `npm test`.
+4. For a material change, add an ADR (copy `templates/ADR.md` into `docs/adr/`)
+   and bump `VERSION` (keep `plugins/weave/.cursor-plugin/plugin.json` aligned).
+5. Commit (Conventional Commits, no AI attribution), then tag and push:
 
 ```bash
 git tag -a vX.Y.Z -m "summary"
@@ -293,6 +326,10 @@ Projects pick the change up when they bump their pin and run `lattice sync`.
 ---
 
 ## Status
+
+v0.8.0 ships Weave, a Cursor plugin generated from the canonical standards,
+and lets agents commit and push without AI attribution. Git hooks remain the
+commit gate; Cursor hooks cover Cursor Agent only.
 
 v0.7.1 fixes dev-branch recovery: `doctor` and `setup` both heal a repo whose
 initial commit never landed instead of repeating the same fatal git error, and

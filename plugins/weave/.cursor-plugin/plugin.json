@@ -1,0 +1,27 @@
+{
+  "name": "weave",
+  "displayName": "Weave",
+  "version": "0.8.0",
+  "description": "Lattice engineering standards for Cursor: generated rules, workflow skills, slash commands, focused agents, and in-agent guardrails.",
+  "author": {
+    "name": "Lattice"
+  },
+  "publisher": "Lattice",
+  "homepage": "https://github.com/lattice-partners/standards",
+  "repository": "https://github.com/lattice-partners/standards",
+  "keywords": [
+    "lattice",
+    "standards",
+    "engineering",
+    "cursor"
+  ],
+  "logo": "assets/logo.svg",
+  "minClientVersions": {
+    "cursor": "1.7.0"
+  },
+  "rules": "rules",
+  "skills": "skills",
+  "commands": "commands",
+  "agents": "agents",
+  "hooks": "hooks/hooks.json"
+}

@@ -1,0 +1,16 @@
+{
+  "name": "lattice-weave",
+  "owner": {
+    "name": "Lattice"
+  },
+  "metadata": {
+    "description": "Private Lattice marketplace. Weave is the engineering-standards plugin generated from this repository."
+  },
+  "plugins": [
+    {
+      "name": "weave",
+      "source": "./plugins/weave",
+      "description": "Lattice engineering standards: rules, skills, commands, agents, and Cursor Agent guardrails."
+    }
+  ]
+}

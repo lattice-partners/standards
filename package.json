@@ -1,6 +1,6 @@
 {
   "name": "@lattice/standards",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "private": true,
   "description": "The paved road for Lattice consulting projects: shared engineering standards, AI-agent instructions, CI/CD, and scaffolding.",
   "type": "module",
@@ -21,9 +21,14 @@
   },
   "scripts": {
     "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
-    "test": "node cli/test.js"
+    "build:weave": "node scripts/build-weave.mjs",
+    "validate:weave": "node scripts/validate-weave.mjs",
+    "test:weave": "node scripts/test-weave-hooks.mjs",
+    "test": "node cli/test.js && node scripts/validate-weave.mjs && node scripts/test-weave-hooks.mjs"
   },
   "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "markdownlint-cli2": "^0.18.1"
   }
 }

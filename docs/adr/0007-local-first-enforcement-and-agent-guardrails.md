@@ -55,7 +55,9 @@ impossible rather than discouraged.
   than guess.
 - **`.claude/settings.json` ships with every scaffold**, denying the irreversible
   commands outright, setting `disableBypassPermissionsMode`, and clearing the
-  commit attribution trailer at source.
+  commit and pull-request attribution trailers at source.
+- **Cursor Agent is a later, separate layer** (ADR-0013). Weave hooks constrain
+  Cursor Agent only. They do not replace these Git hooks.
 - **`lattice doctor` and `lattice verify`** give a non-technical operator a way
   to answer "is my machine set up?" and "is this safe to ship?" without reading
   code.

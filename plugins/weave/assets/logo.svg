@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Weave">
+  <rect width="64" height="64" rx="14" fill="#0B1F17"/>
+  <path d="M18 18h8l6 18 6-18h8" stroke="#7CFFB2" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M22 46h20" stroke="#7CFFB2" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M16 32h8M40 32h8" stroke="#3FAF7A" stroke-width="2" stroke-linecap="round"/>
+</svg>

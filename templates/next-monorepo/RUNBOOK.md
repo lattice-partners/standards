@@ -44,7 +44,8 @@ through a previous ticket. Finish or park that first, or ask an engineer.
 
 ## Seeing your change
 
-When the agent says it is done, push the work up:
+When the agent says it is done, it should have committed and pushed the ticket
+branch (no force, no hook bypass, no AI attribution trailer). Check the preview:
 
 ```bash
 git push

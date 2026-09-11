@@ -6,9 +6,11 @@ The conceptual reference for the system. For the practical commands, see the
 ## Mental model
 
 `lattice-standards` is a single source of truth for how Lattice builds software,
-plus a CLI that copies that standard into any project and keeps it current.
-Change the standard once here, tag a release, and every project pulls the update
-on its own schedule. Nothing is force-pushed onto a client repo.
+plus two ways to put that standard in front of an agent: a CLI that vendors it
+into a project's `.lattice/`, and Weave, a Cursor plugin generated from the
+same files. Change the standard once here, tag a release, and every project
+pulls the update on its own schedule. Nothing is force-pushed onto a client
+repo.
 
 The design note behind this lives outside the repo at
 `Lattice/docs/superpowers/specs/2026-06-09-lattice-machine-design.md`.
@@ -48,19 +50,28 @@ rather than spread across the per-service guides, and why the hooks are vendored
 rather than installed from a dependency: a hook improvement made here propagates
 through `sync` exactly like a rule change.
 
-## Distribution: npm from a git tag
+## Distribution: npm from a git tag, and Weave in Cursor
 
 There is no registry publish. A project pins the standard by installing straight
 from the GitHub tag:
 
 ```bash
-npm i -D github:lattice-partners/standards#v0.7.1
+npm i -D github:lattice-partners/standards#v0.8.0
 ```
 
 npm handles the pinning. When the CLI runs, it copies the `core/` docs bundled
 inside whichever version was installed. "Which version am I on" is simply "which
 tag did I install." The npm package name (`@lattice/standards`) is internal and
 unrelated to the git path.
+
+Cursor loads a different shape of the same standard. Weave (`plugins/weave/`)
+is a Cursor plugin generated from `core/` and `stack/stack-baseline.md`. The
+private marketplace at `.cursor-plugin/marketplace.json` points at it. Rules,
+skills, commands, agents, and Cursor hooks reach Cursor Agent without copying
+files into the project. Git hooks, CI, and the CLI still require the npm pin
+and `lattice init` / `adopt` / `hooks install`. The two channels are not
+substitutes: Cursor hooks never see a terminal commit, and Git hooks never see
+a Cursor Agent `Read` of `.env`. ADR-0013 records the split.
 
 ## What a project ends up with
 
@@ -85,7 +96,7 @@ my-app/
 
 ```markdown
 <!-- lattice:standards -->
-Standards: lattice-standards@0.7.1  (vendored in .lattice/)
+Standards: lattice-standards@0.8.0  (vendored in .lattice/)
 Engagement posture: greenfield
 
 Read the vendored standard before working here:
@@ -190,14 +201,19 @@ Review and merging into `main` sets Done.
 agent working in the project: the irreversible commands (`supabase db reset`,
 `vercel --prod`, `git push --force`) are denied outright rather than prompted,
 `disableBypassPermissionsMode` stops anyone switching prompts off, and
-`attribution.commit` is cleared so no AI attribution trailer is generated in the
-first place.
+`attribution.commit` and `attribution.pr` are cleared so no AI attribution
+trailer is generated on a commit or a pull request in the first place.
 
 `core/agent-safety.md` is vendored alongside it and covers what the settings
 file cannot: never disable RLS or reach for the secret key to clear a permission
 error, never delete a failing test, never use `--no-verify`. Every rule there
 describes something that makes an error go away, which is precisely why it is
 tempting.
+
+In Cursor, Weave adds the same class of deny at agent-tool time: force push,
+hook bypass, `supabase db reset`, production Vercel deploys, and reads of real
+`.env` files. That layer is only Cursor Agent. The Git hooks remain the gate
+for what actually lands in git.
 
 ## Two faces: humans and agents
 
@@ -219,9 +235,9 @@ either blocking the other. Coding agents drive `lattice check`, `lattice init x
 ## The update loop
 
 ```text
-edit core/ here  ->  lint + test  ->  ADR + VERSION bump  ->  tag vX.Y.Z  ->  push
-                                                                   |
-project:  bump pinned devDep to #vX.Y.Z  ->  lattice sync  ->  lattice check
+edit core/ here -> build Weave rules -> lint + test -> ADR + VERSION bump -> tag -> push
+  CLI project: bump pin to #vX.Y.Z -> lattice sync -> lattice check
+  Cursor: refresh or reindex the team marketplace
 ```
 
 Each project moves at its own pace. `check` in CI flags any project that has
@@ -235,7 +251,7 @@ drifted from the version it pinned.
 release tags. Projects can also reference the action directly:
 
 ```yaml
-- uses: lattice-partners/standards/ci/actions/standards-check@v0.7.1
+- uses: lattice-partners/standards/ci/actions/standards-check@v0.8.0
 ```
 
 ## CLI internals
@@ -268,8 +284,10 @@ Material changes get an ADR (`docs/adr/`) and a `VERSION` bump. The records so
 far: Conventional Commits (0001), no em dashes or emojis (0002), concise commit
 messages (0003), the CLI and scaffolding (0004), the interactive shell (0005),
 the Lattice stack (0006), local-first enforcement and agent guardrails (0007),
-the branching and ticket workflow (0008), and init producing a working repo
-(0009). `CLAUDE.md` holds the working rules for changing this repo.
+the branching and ticket workflow (0008), init producing a working repo
+(0009), setup owning its actions (0010), unborn-HEAD remediation (0011),
+agents committing without attribution (0012), and the Weave Cursor plugin
+(0013). `CLAUDE.md` holds the working rules for changing this repo.
 
 ADR-0007 also records three risks accepted deliberately rather than solved:
 agents hold production credentials, `main` takes direct commits, and there is no

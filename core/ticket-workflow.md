@@ -23,7 +23,8 @@ rejects it.
 
 Open a pull request from the ticket branch into `dev`. **Leave the body empty.**
 The ticket already describes the work; copying it here only creates two versions
-that drift apart.
+that drift apart. Empty means empty: no summary paragraph, no AI attribution
+trailer.
 
 Merging moves the ticket to In Review.
 
@@ -43,9 +44,10 @@ nothing else:
 The first list closes the tickets on merge. The second is the human-readable
 summary of what is shipping.
 
-Generate it with `lattice release` rather than writing it by hand. A closing
-line that gets missed leaves a shipped ticket open, and the generated list is
-derived from the commit range so it cannot miss one.
+Generate it with `lattice release` rather than writing it by hand, and paste
+that output with nothing added. A closing line that gets missed leaves a
+shipped ticket open, and the generated list is derived from the commit range
+so it cannot miss one. An AI attribution trailer on this body is a defect.
 
 Merging into `main` closes the tickets.
 
@@ -53,7 +55,9 @@ Merging into `main` closes the tickets.
 
 Commit messages follow the base standard: Conventional Commits, one line unless
 the *why* is not obvious, no ticket IDs or URLs in the message (the branch
-carries the link), and never an AI-attribution trailer.
+carries the link), and never an AI-attribution trailer. The same trailer ban
+applies to pull request titles and bodies. Agents may commit and push; they
+must not force-push or skip hooks.
 
 ## Environments
 

@@ -16,10 +16,11 @@ agents only by being hand-copied into each project (as happened in radar).
 
 Adopt [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
 as the commit-message standard for all Lattice projects. The operative commit
-standard (format, atomic commits, no AI attribution, agents-never-commit) now
-lives in a single home - the **Commits** section of `agents-base.md`, which is
-vendored into every project. `working-agreement.md` points to it rather than
-restating it.
+standard (format, atomic commits, no AI attribution) now lives in a single
+home - the **Commits** section of `agents-base.md`, which is vendored into
+every project. `working-agreement.md` points to it rather than restating it.
+ADR-0012 supersedes the original agents-never-commit clause: agents may
+commit and push, still without AI attribution.
 
 ## Why
 

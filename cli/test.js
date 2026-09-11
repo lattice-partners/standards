@@ -409,6 +409,9 @@ await step('commit-msg rejects an em dash', () => {
 await step('commit-msg rejects an AI attribution trailer', () => {
   const d = tmp('msgattr')
   assert.equal(msg(d, 'feat: add reset\n\nCo-Authored-By: Someone <a@b.c>\n'), 1)
+  assert.equal(msg(d, 'feat: add reset\n\nGenerated with Claude Code\n'), 1)
+  assert.equal(msg(d, 'feat: add reset\n\nMade-with: Cursor\n'), 1)
+  assert.equal(msg(d, 'feat: add reset\n\nMade with Cursor\n'), 1)
 })
 
 await step('commit-msg rejects a ticket id and a URL', () => {

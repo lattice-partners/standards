@@ -86,11 +86,14 @@ Then `ln -s AGENTS.md CLAUDE.md` so Claude Code and AGENTS.md-aware tools
 - **No names or PII.** Never put personal names, Linear or other ticket
   IDs/URLs, emails, or any other PII in a commit message. Describe the change,
   not who asked for it or where it is tracked.
-- **No AI attribution.** Never add `Co-Authored-By:` trailers or any AI
-  attribution footer. Plain messages only - even when asked to run the commit.
-- **Agents never commit unless explicitly asked.** Suggest the message; the
-  human runs git. Never commit secrets, `.env` files, keys, large binaries, or
-  `node_modules`.
+- **No AI attribution.** Never add `Co-Authored-By:`, `Generated with`,
+  `Made-with:`, or any other AI attribution trailer or footer to a commit
+  message, a pull request title, or a pull request body. Not when the tool
+  offers to insert one. The text is the change, not who typed it.
+- **Agents may commit and push.** Run `git commit` and `git push` when the
+  work is ready on the ticket branch. Do not refuse because you are an agent.
+  Never `--force`, never `--no-verify`, never `--skip-checks`. Never commit
+  secrets, `.env` files, keys, large binaries, or `node_modules`.
 
 ## When unsure - ask
 

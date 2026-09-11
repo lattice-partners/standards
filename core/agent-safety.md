@@ -18,7 +18,11 @@ precisely why it is tempting, and why it is banned.
 - **Never delete or rewrite a failing test** to make a run pass. A failing test
   is information.
 - **Never use `--no-verify`, `--force`, or `--skip-checks`** to get a commit or
-  push through. The gate that is blocking you is the gate that is working.
+  push through. You may commit and push; you may not skip the gate. The gate
+  that is blocking you is the gate that is working.
+- **Never add an AI attribution trailer** to a commit message or a pull
+  request title or body. Not `Co-Authored-By:`, not `Generated with`, not
+  `Made-with:`, not a "written with" footer. Strip it if a tool inserts one.
 
 If you are stuck on one of these, stop and say so. "I cannot do this without
 weakening authorization, here is what I would need" is a correct answer.

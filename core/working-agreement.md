@@ -33,9 +33,9 @@ repo. Rules:
 ## Commit discipline
 
 The operative commit standard - Conventional Commits, atomic commits, no AI
-attribution, never commit secrets, agents never commit unless asked - lives in
-the vendored base: see the **Commits** section of `agents-base.md`. It applies
-to humans too.
+attribution on commits or pull requests, never commit secrets, agents may
+commit and push - lives in the vendored base: see the **Commits** section of
+`agents-base.md`. It applies to humans too.
 
 ## Data & git safety
 
@@ -51,4 +51,5 @@ to humans too.
 
 Code works · tests pass · no lint errors · edge cases handled · error states have
 clear user-facing messages · no dead code introduced · memory/docs updated if
-relevant · security review done if security-adjacent · human prompted to commit.
+relevant · security review done if security-adjacent · committed on a ticket
+branch with no AI attribution trailer.
