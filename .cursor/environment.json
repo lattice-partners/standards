@@ -1,0 +1,4 @@
+{
+  "name": "lattice-standards",
+  "install": "export NVM_DIR=\"$HOME/.nvm\" && . \"$NVM_DIR/nvm.sh\" && nvm install && nvm alias default \"$(cat .nvmrc)\" && npm ci"
+}
