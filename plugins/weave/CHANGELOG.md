@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.0
+
+Signal loop: harvest meetings, Slack, mail, GitHub, and the tracker before
+planning product work. Adds `/harvest`, `/intake`, `/capture`, granola-engineer
+and signal-operator agents, `Weave.md` project overrides, and optional plugin
+harvest variables. ADR-0014.
+
 ## 0.8.0
 
 First Weave release. Generated rules from the Lattice portable core and stack

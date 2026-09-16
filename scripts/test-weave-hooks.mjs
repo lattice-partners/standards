@@ -173,6 +173,9 @@ step('sessionStart injects guest context without AGENTS.md', () => {
   assert.match(text, /guest posture/)
   assert.match(text, /Tracker: none declared/)
   assert.match(text, /Vendored standards: none/)
+  assert.match(text, /Signal loop:/)
+  assert.match(text, /Overrides: none/)
+  assert.match(text, /slack_channels=unset/)
 })
 
 step('sessionStart detects tracker, stack, and .lattice', () => {
@@ -190,6 +193,20 @@ step('sessionStart detects tracker, stack, and .lattice', () => {
   assert.match(text, /Tracker: MIN/)
   assert.match(text, /\.lattice\/ \(0\.8\.0\)/)
   assert.match(text, /next-monorepo/)
+})
+
+step('sessionStart injects Weave.md and harvest plugin vars', () => {
+  const cwd = fs.mkdtempSync(join(os.tmpdir(), 'weave-session-'))
+  fs.writeFileSync(join(cwd, 'Weave.md'), '# Weave\n\n- Slack channels: eng\n')
+  const text = sessionContext(
+    cwd,
+    { variables: { slack_channels: 'eng,client-mindie' } },
+    {},
+  )
+  assert.match(text, /Overrides: Weave\.md/)
+  assert.match(text, /Slack channels: eng/)
+  assert.match(text, /slack_channels=set/)
+  assert.match(text, /github_org=unset/)
 })
 
 step('hooks.json failClosed is set for security pre-hooks', () => {

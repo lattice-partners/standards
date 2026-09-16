@@ -13,6 +13,7 @@ repo unless a human asked.
 - Is there `.lattice/`?
 - What posture does the project declare?
 - Is a tracker or Lattice stack declared?
+- Is there `Weave.md`?
 
 Stop and ask if posture is unclear.
 

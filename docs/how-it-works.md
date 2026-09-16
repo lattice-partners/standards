@@ -20,8 +20,8 @@ The design note behind this lives outside the repo at
 - **Portable core (`core/`)** - stack-agnostic, applied to every engagement:
   `agents-base.md` (engineering rules, writing style, commit discipline),
   `working-agreement.md` (posture, rituals, definition of done),
-  `security-baseline.md`, and `memory-template/` (seed files for a project's
-  `memory/`).
+  `security-baseline.md`, `signal-loop.md` (harvest before you build), and
+  `memory-template/` (seed files for a project's `memory/`).
 - **Lattice stack (`stack/`)** - the opinionated stack: `stack-baseline.md` (the
   enforceable rules), shared ESLint and Prettier config, and setup guides for
   Next.js, Supabase, Clerk, and Vercel. Applied fully on greenfield; used
@@ -85,6 +85,7 @@ my-app/
     security-baseline.md
     agent-safety.md
     ticket-workflow.md
+    signal-loop.md
     stack-baseline.md    (stack projects only)
     VERSION
   AGENTS.md            entry point, with the managed block below
@@ -106,6 +107,7 @@ Read the vendored standard before working here:
 - .lattice/security-baseline.md - non-negotiable security rules
 - .lattice/ticket-workflow.md - branching, tickets, releases
 - .lattice/working-agreement.md - posture, rituals, commit discipline, DoD
+- .lattice/signal-loop.md - harvest meetings, chat, mail, GitHub, tracker
 - .lattice/stack-baseline.md - Lattice stack rules (stack projects)
 <!-- /lattice:standards -->
 ```

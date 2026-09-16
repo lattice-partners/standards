@@ -14,6 +14,7 @@ Inspect first. Do not assume the project wants the Lattice CLI.
 3. Check for `.lattice/` (vendored standards) and `.lattice/hooks/` (Git hooks).
 4. Check for a tracker line (`Tracker: MIN`) and a Lattice stack line.
 5. Check `package.json`, `apps/`, and `supabase/` only to understand the repo.
+6. Check `Weave.md` for project exceptions and named signal sources.
 
 ## Decision
 

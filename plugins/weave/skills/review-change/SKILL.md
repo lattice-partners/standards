@@ -26,6 +26,9 @@ Check, with evidence (file and line):
 4. **Security.** Secrets, `NEXT_PUBLIC_` leaks, RLS bypass, missing input
    validation.
 5. **Standards.** Typing, error handling, naming, commit/PR attribution.
+6. **Signal loop.** Product work without harvest when harvest was required;
+   Slack/mail writes that were not asked for; standing exceptions left only
+   in chat instead of `Weave.md`.
 
 Do not implement fixes in a read-only review unless asked. File findings
 by severity: blocker, should-fix, nit.

@@ -44,7 +44,8 @@ ln -sfn "$(pwd)/plugins/weave" ~/.cursor/plugins/local/weave
 ```
 
 Then reload Cursor (`Developer: Reload Window`) and confirm Weave rules,
-skills, commands, agents, and hooks are visible.
+skills, commands, agents, and hooks are visible. `/harvest`, `/intake`, and
+`/capture` are the signal-loop commands. Project exceptions go in `Weave.md`.
 
 **Team marketplace** (Cursor dashboard):
 
@@ -326,6 +327,10 @@ Projects pick the change up when they bump their pin and run `lattice sync`.
 ---
 
 ## Status
+
+v0.9.0 adds the signal loop to Weave: harvest meetings, Slack, mail, GitHub,
+and the tracker before planning product work, with `/harvest`, `/intake`,
+`/capture`, and `Weave.md` for project exceptions.
 
 v0.8.0 ships Weave, a Cursor plugin generated from the canonical standards,
 and lets agents commit and push without AI attribution. Git hooks remain the

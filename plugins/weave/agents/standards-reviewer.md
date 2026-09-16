@@ -15,6 +15,8 @@ Load the Weave rules that apply:
   security and agent safety.
 - Ticket workflow when `AGENTS.md` declares a Tracker or the diff is a
   branch / PR change.
+- Signal loop when the work claims meeting, Slack, mail, or GitHub
+  provenance, or when `Weave.md` changed.
 - Lattice stack when `apps/` or `supabase/` is in the diff.
 
 Honor engagement posture. In a consultative-guest repo, do not demand a

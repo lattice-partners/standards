@@ -19,3 +19,13 @@
 ## Team
 
 <who is involved, roles>
+
+## Signal sources
+
+Standing harvest targets. Keep exceptions in `/Weave.md` at the repo root.
+
+- Slack:
+- Tracker:
+- GitHub:
+- Meetings:
+- Mail:

@@ -26,7 +26,8 @@ repo. Rules:
 
 - **Plan before code** for: new features, architectural or multi-file changes,
   anything touching security / auth / payments / contracts. Get explicit
-  approval before writing code.
+  approval before writing code. Harvest meetings, chat, mail, GitHub, and the
+  tracker first when the change is product work (see `signal-loop.md`).
 - **Just do it** for: single-line fixes, typos, adding a test for existing code,
   comment/wording updates.
 

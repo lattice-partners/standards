@@ -88,6 +88,26 @@ const RULES = [
     ],
   },
   {
+    file: 'signal-loop.mdc',
+    description:
+      'Lattice signal loop: harvest meetings, chat, mail, GitHub, the tracker, and this repo Cursor setup before planning product work. Writes back only when asked.',
+    alwaysApply: true,
+    sources: [
+      {
+        path: 'core/signal-loop.md',
+        headings: [
+          'Sources',
+          'Harvest before you build',
+          'Conflict and recency',
+          'Memory',
+          'Writes back to the world',
+          'Project overrides',
+          'When not to harvest',
+        ],
+      },
+    ],
+  },
+  {
     file: 'lattice-stack.mdc',
     description:
       'Lattice stack baseline: Next.js monorepo layout, Clerk-aware RLS, env vars, migrations, deploys, and tests.',

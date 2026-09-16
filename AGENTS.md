@@ -25,5 +25,6 @@ The engineering standard lives in `core/`:
 - `core/working-agreement.md` - posture, rituals, commit discipline, DoD
 - `core/security-baseline.md` - non-negotiable security rules
 - `core/memory-template/` - seed memory files for a new project
+- `core/signal-loop.md` - harvest meetings, chat, mail, GitHub, and the tracker before you build
 
 These also govern work in this repo.

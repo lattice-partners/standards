@@ -15,6 +15,8 @@ existing code. New code you author still meets the Lattice bar.
   planning.
 - Read the files you will edit before editing them.
 - If a tracker is declared, work on the ticket branch.
+- If the request cites a meeting, person, Slack thread, mail, or GitHub
+  event, harvest that source before coding (see `harvest-signals`).
 
 ## Action
 

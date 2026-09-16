@@ -122,12 +122,15 @@ await step('init defaults to the next-monorepo scaffold', async () => {
   assert.ok(fs.existsSync(join(d, '.claude/settings.json')))
   assert.match(fs.readFileSync(join(d, 'AGENTS.md'), 'utf8'), /Lattice stack: next-monorepo/)
   assert.ok(fs.existsSync(join(d, VENDOR_DIR, 'stack-baseline.md')), 'stack doc not vendored')
+  assert.ok(fs.existsSync(join(d, VENDOR_DIR, 'signal-loop.md')), 'signal loop not vendored')
+  assert.ok(fs.existsSync(join(d, 'Weave.md')), 'Weave.md scaffold missing')
+  assert.match(fs.readFileSync(join(d, 'AGENTS.md'), 'utf8'), /Weave\.md/)
 })
 
 await step('init --stack=minimal keeps the config-only scaffold', async () => {
   const d = tmp('minimal')
   await init({ dir: d, stack: 'minimal' })
-  for (const f of ['tsconfig.json', 'eslint.config.mjs', 'prettier.config.mjs', '.gitignore']) {
+  for (const f of ['tsconfig.json', 'eslint.config.mjs', 'prettier.config.mjs', '.gitignore', 'Weave.md']) {
     assert.ok(fs.existsSync(join(d, f)), `missing ${f}`)
   }
   assert.equal(fs.existsSync(join(d, 'apps')), false, 'minimal should not scaffold apps/')

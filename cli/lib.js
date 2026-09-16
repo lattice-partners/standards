@@ -52,6 +52,7 @@ const DOC_DESC = {
   'security-baseline.md': 'non-negotiable security rules',
   'agent-safety.md': 'what an agent must never do to clear an error',
   'ticket-workflow.md': 'branching, tickets, releases',
+  'signal-loop.md': 'harvest meetings, chat, mail, GitHub, and the tracker before you build',
   'stack-baseline.md': 'Lattice stack rules (layout, RLS, env, migrations)',
 }
 
@@ -328,6 +329,8 @@ export function agentsMd({ name, version, posture, stack, tracker }) {
     '',
     '## Architecture pointers',
     '<decisions already made; the why>',
+    '',
+    'Project exceptions to Lattice defaults live in `Weave.md`. Silence means the default.',
     '',
     '## Environment & ops',
     '<env vars, deploy targets, migration rules>',

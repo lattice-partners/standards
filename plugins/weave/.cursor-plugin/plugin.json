@@ -1,8 +1,8 @@
 {
   "name": "weave",
   "displayName": "Weave",
-  "version": "0.8.0",
-  "description": "Lattice engineering standards for Cursor: generated rules, workflow skills, slash commands, focused agents, and in-agent guardrails.",
+  "version": "0.9.0",
+  "description": "Lattice engineering standards for Cursor: generated rules, signal-loop harvest, workflow skills, slash commands, focused agents, and in-agent guardrails.",
   "author": {
     "name": "Lattice"
   },
@@ -13,7 +13,10 @@
     "lattice",
     "standards",
     "engineering",
-    "cursor"
+    "cursor",
+    "slack",
+    "granola",
+    "github"
   ],
   "logo": "assets/logo.svg",
   "minClientVersions": {
@@ -23,5 +26,26 @@
   "skills": "skills",
   "commands": "commands",
   "agents": "agents",
-  "hooks": "hooks/hooks.json"
+  "hooks": "hooks/hooks.json",
+  "variables": {
+    "type": "object",
+    "properties": {
+      "slack_channels": {
+        "type": "string",
+        "description": "Comma-separated Slack channel names or IDs to harvest by default."
+      },
+      "github_org": {
+        "type": "string",
+        "description": "GitHub org or user that owns the repos this project should watch."
+      },
+      "tracker_team": {
+        "type": "string",
+        "description": "Tracker team key or name when AGENTS.md declares a Tracker."
+      },
+      "email_query": {
+        "type": "string",
+        "description": "Default Gmail search used during harvest, for example newer_than:7d."
+      }
+    }
+  }
 }

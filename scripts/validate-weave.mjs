@@ -20,6 +20,9 @@ const EXPECTED_SKILLS = [
   'review-change',
   'ship-change',
   'release-change',
+  'harvest-signals',
+  'intake-work',
+  'capture-knowledge',
 ]
 const EXPECTED_COMMANDS = [
   'setup',
@@ -29,12 +32,17 @@ const EXPECTED_COMMANDS = [
   'verify',
   'ship',
   'release',
+  'harvest',
+  'intake',
+  'capture',
 ]
 const EXPECTED_AGENTS = [
   'standards-reviewer',
   'security-reviewer',
   'test-verifier',
   'guest-contributor',
+  'granola-engineer',
+  'signal-operator',
 ]
 const COMMAND_SECTIONS = ['Preflight', 'Plan', 'Commands', 'Verification', 'Summary']
 
@@ -114,6 +122,10 @@ export function validateWeave() {
   if (marketplace.plugins?.[0]?.name !== 'weave') fail('marketplace plugin name must be weave')
   if (marketplace.plugins?.[0]?.source !== './plugins/weave') {
     fail('marketplace source must be ./plugins/weave')
+  }
+  const harvestVars = plugin.variables?.properties ?? {}
+  for (const key of ['slack_channels', 'github_org', 'tracker_team', 'email_query']) {
+    if (!harvestVars[key]) fail(`plugin.json missing harvest variable ${key}`)
   }
 
   for (const key of ['rules', 'skills', 'commands', 'agents']) {

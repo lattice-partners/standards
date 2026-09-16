@@ -16,6 +16,8 @@ updates can skip this skill and just be done.
 - Find the ticket if a tracker is declared. The branch name is the ticket
   identifier when the Lattice workflow applies.
 - Search the repo for the current behaviour before proposing a new one.
+- For product or multi-file work, follow `harvest-signals` (meetings, Slack,
+  mail, GitHub, tracker, `Weave.md`) unless this is skip-harvest.
 
 ## Action
 

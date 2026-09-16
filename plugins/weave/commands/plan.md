@@ -9,6 +9,8 @@ Follow the `plan-change` skill. Do not start implementation in this command.
 ## Preflight
 
 - Read `AGENTS.md` and the ticket if a tracker is declared.
+- Harvest meetings, Slack, mail, GitHub, and the tracker for product work
+  (`harvest-signals`) unless this is skip-harvest.
 - Confirm this is not a "just do it" change (typo, one-line fix, extra test).
 
 ## Plan
