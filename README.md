@@ -53,3 +53,13 @@ cannot be opted out. Supabase, Clerk, Vercel, and Lattice Design can be.
 3. Bump `VERSION` and `plugins/weave/.cursor-plugin/plugin.json` for releases.
 
 See [AGENTS.md](AGENTS.md) for agent instructions on this repo.
+
+## Why we test
+
+The plugin is just files and JSON manifests — no app to run. `npm test` checks
+that those files are complete and consistent so Weave actually loads in Cursor:
+versions match, manifests are valid, every rule/skill/command is present, and
+frontmatter is correct. CI runs the same check on every PR.
+
+You only need to run it when you change plugin structure (new rule, version
+bump, manifest edit). Tweaking rule text alone does not require a local test run.
