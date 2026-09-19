@@ -44,7 +44,7 @@ ln -sfn "$(pwd)/plugins/weave" ~/.cursor/plugins/local/weave
 ```
 
 Then reload Cursor (`Developer: Reload Window`) and confirm Weave rules,
-skills, commands, and hooks are visible.
+skills, and commands are visible.
 
 **Team marketplace** (Cursor dashboard):
 
@@ -327,9 +327,11 @@ Projects pick the change up when they bump their pin and run `lattice sync`.
 
 ## Status
 
+v0.10.0 removes Weave subagents and Cursor hooks. Rules, skills, and slash
+commands remain; Git hooks are still the commit gate.
+
 v0.8.0 ships Weave, a Cursor plugin generated from the canonical standards,
-and lets agents commit and push without AI attribution. Git hooks remain the
-commit gate; Cursor hooks cover Cursor Agent only.
+and lets agents commit and push without AI attribution.
 
 v0.7.1 fixes dev-branch recovery: `doctor` and `setup` both heal a repo whose
 initial commit never landed instead of repeating the same fatal git error, and

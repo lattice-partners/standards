@@ -10,7 +10,7 @@
     {
       "name": "weave",
       "source": "./plugins/weave",
-      "description": "Lattice engineering standards: rules, skills, commands, and Cursor Agent guardrails."
+      "description": "Lattice engineering standards: rules, skills, and commands."
     }
   ]
 }

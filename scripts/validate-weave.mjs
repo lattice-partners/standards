@@ -83,7 +83,6 @@ export function validateWeave() {
   const pkg = readJson(join(ROOT, 'package.json'))
   const plugin = readJson(join(PLUGIN_ROOT, '.cursor-plugin/plugin.json'))
   const marketplace = readJson(join(ROOT, '.cursor-plugin/marketplace.json'))
-  const hooks = readJson(join(PLUGIN_ROOT, 'hooks/hooks.json'))
 
   if (pkg.version !== version) fail(`package.json version ${pkg.version} != VERSION ${version}`)
   if (plugin.version !== version) fail(`plugin.json version ${plugin.version} != VERSION ${version}`)
@@ -114,8 +113,6 @@ export function validateWeave() {
     const rel = plugin[key]
     if (!rel || !fs.existsSync(join(PLUGIN_ROOT, rel))) fail(`plugin.json ${key} path missing`)
   }
-  if (!fs.existsSync(join(PLUGIN_ROOT, 'hooks/hooks.json'))) fail('missing hooks/hooks.json')
-
   const skills = listDirs(join(PLUGIN_ROOT, 'skills'))
   if (!sameNames(skills, EXPECTED_SKILLS)) {
     fail(`skills mismatch: ${skills.join(', ')}`)
@@ -146,21 +143,6 @@ export function validateWeave() {
       if (!heading(markdown, section)) fail(`${file} missing ## ${section}`)
     }
   }
-
-  const shellHook = hooks.hooks?.beforeShellExecution?.[0]
-  const readHook = hooks.hooks?.beforeReadFile?.[0]
-  const sessionHook = hooks.hooks?.sessionStart?.[0]
-  for (const [label, hook] of [
-    ['beforeShellExecution', shellHook],
-    ['beforeReadFile', readHook],
-    ['sessionStart', sessionHook],
-  ]) {
-    if (!hook?.command?.includes('${CURSOR_PLUGIN_ROOT}')) {
-      fail(`${label} command must use \${CURSOR_PLUGIN_ROOT}`)
-    }
-  }
-  if (shellHook?.failClosed !== true) fail('beforeShellExecution must be failClosed')
-  if (readHook?.failClosed !== true) fail('beforeReadFile must be failClosed')
 
   for (const problem of checkRules()) fail(problem)
 

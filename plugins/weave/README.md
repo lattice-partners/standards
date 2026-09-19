@@ -4,8 +4,8 @@ Lattice engineering standards as a Cursor plugin. Canonical prose still lives
 in `core/` and `stack/stack-baseline.md` in this repository. The files in
 `rules/` are generated; do not edit them by hand.
 
-Weave does not replace the Lattice CLI or Git hooks. Cursor hooks constrain
-Cursor Agent. Git hooks remain the gate for staged files and commit messages.
+Weave does not replace the Lattice CLI or Git hooks. Git hooks remain the gate
+for staged files and commit messages.
 
 ## What it contains
 
@@ -13,8 +13,6 @@ Cursor Agent. Git hooks remain the gate for staged files and commit messages.
 - **Skills** for setup, planning, implementation, debugging, verification,
   review, shipping, and release
 - **Slash commands** that are thin entry points into those skills
-- **Cursor hooks** that deny force-push, hook bypass, destructive database
-  reset, production Vercel deploys, and reads of real `.env` files
 
 ## Local install
 
@@ -25,8 +23,8 @@ mkdir -p ~/.cursor/plugins/local
 ln -sfn "$(pwd)/plugins/weave" ~/.cursor/plugins/local/weave
 ```
 
-Reload Cursor (`Developer: Reload Window`). Confirm rules, skills, commands,
-and hooks appear under Weave.
+Reload Cursor (`Developer: Reload Window`). Confirm rules, skills, and
+commands appear under Weave.
 
 ## Team marketplace
 
@@ -40,7 +38,7 @@ and hooks appear under Weave.
 6. Promote Weave to **Required** after the pilot holds.
 
 There is no documented immutable per-user plugin version pin. The CLI still
-pins via the git tag (`#v0.8.0`). Cursor loads whatever the marketplace
+pins via the git tag (`#v0.10.0`). Cursor loads whatever the marketplace
 currently serves.
 
 ## Regenerating rules

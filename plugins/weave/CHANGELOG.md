@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.10.0
+
+Remove Weave Cursor hooks and their scripts. Git hooks and vendored agent
+safety rules remain the enforcement layer.
+
 ## 0.9.0
 
 Remove Weave subagents. Review, verification, and security checks stay in

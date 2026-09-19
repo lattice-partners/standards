@@ -67,11 +67,9 @@ unrelated to the git path.
 Cursor loads a different shape of the same standard. Weave (`plugins/weave/`)
 is a Cursor plugin generated from `core/` and `stack/stack-baseline.md`. The
 private marketplace at `.cursor-plugin/marketplace.json` points at it. Rules,
-skills, commands, and Cursor hooks reach Cursor Agent without copying
-files into the project. Git hooks, CI, and the CLI still require the npm pin
-and `lattice init` / `adopt` / `hooks install`. The two channels are not
-substitutes: Cursor hooks never see a terminal commit, and Git hooks never see
-a Cursor Agent `Read` of `.env`. ADR-0013 records the split.
+skills, and commands reach Cursor Agent without copying files into the
+project. Git hooks, CI, and the CLI still require the npm pin and
+`lattice init` / `adopt` / `hooks install`. ADR-0013 records the split.
 
 ## What a project ends up with
 
@@ -209,11 +207,6 @@ file cannot: never disable RLS or reach for the secret key to clear a permission
 error, never delete a failing test, never use `--no-verify`. Every rule there
 describes something that makes an error go away, which is precisely why it is
 tempting.
-
-In Cursor, Weave adds the same class of deny at agent-tool time: force push,
-hook bypass, `supabase db reset`, production Vercel deploys, and reads of real
-`.env` files. That layer is only Cursor Agent. The Git hooks remain the gate
-for what actually lands in git.
 
 ## Two faces: humans and agents
 
