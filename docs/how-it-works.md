@@ -67,7 +67,7 @@ unrelated to the git path.
 Cursor loads a different shape of the same standard. Weave (`plugins/weave/`)
 is a Cursor plugin generated from `core/` and `stack/stack-baseline.md`. The
 private marketplace at `.cursor-plugin/marketplace.json` points at it. Rules,
-skills, commands, agents, and Cursor hooks reach Cursor Agent without copying
+skills, commands, and Cursor hooks reach Cursor Agent without copying
 files into the project. Git hooks, CI, and the CLI still require the npm pin
 and `lattice init` / `adopt` / `hooks install`. The two channels are not
 substitutes: Cursor hooks never see a terminal commit, and Git hooks never see

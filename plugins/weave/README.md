@@ -13,8 +13,6 @@ Cursor Agent. Git hooks remain the gate for staged files and commit messages.
 - **Skills** for setup, planning, implementation, debugging, verification,
   review, shipping, and release
 - **Slash commands** that are thin entry points into those skills
-- **Agents** for standards review, security review, test verification, and
-  brownfield guest work
 - **Cursor hooks** that deny force-push, hook bypass, destructive database
   reset, production Vercel deploys, and reads of real `.env` files
 
@@ -28,7 +26,7 @@ ln -sfn "$(pwd)/plugins/weave" ~/.cursor/plugins/local/weave
 ```
 
 Reload Cursor (`Developer: Reload Window`). Confirm rules, skills, commands,
-agents, and hooks appear under Weave.
+and hooks appear under Weave.
 
 ## Team marketplace
 

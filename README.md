@@ -44,7 +44,7 @@ ln -sfn "$(pwd)/plugins/weave" ~/.cursor/plugins/local/weave
 ```
 
 Then reload Cursor (`Developer: Reload Window`) and confirm Weave rules,
-skills, commands, agents, and hooks are visible.
+skills, commands, and hooks are visible.
 
 **Team marketplace** (Cursor dashboard):
 

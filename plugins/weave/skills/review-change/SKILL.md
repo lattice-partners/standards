@@ -1,6 +1,6 @@
 ---
 name: review-change
-description: Review a diff for correctness, maintainability, tests, and Lattice standards. Use before shipping, when asked to review a PR, or when delegating a read-only pass to the standards-reviewer agent.
+description: Review a diff for correctness, maintainability, tests, and Lattice standards. Use before shipping or when asked to review a PR.
 ---
 
 # Review a change

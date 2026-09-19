@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.0
+
+Remove Weave subagents. Review, verification, and security checks stay in
+skills and slash commands.
+
 ## 0.8.0
 
 First Weave release. Generated rules from the Lattice portable core and stack

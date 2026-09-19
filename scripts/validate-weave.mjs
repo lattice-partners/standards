@@ -30,12 +30,6 @@ const EXPECTED_COMMANDS = [
   'ship',
   'release',
 ]
-const EXPECTED_AGENTS = [
-  'standards-reviewer',
-  'security-reviewer',
-  'test-verifier',
-  'guest-contributor',
-]
 const COMMAND_SECTIONS = ['Preflight', 'Plan', 'Commands', 'Verification', 'Summary']
 
 function readJson(path) {
@@ -116,7 +110,7 @@ export function validateWeave() {
     fail('marketplace source must be ./plugins/weave')
   }
 
-  for (const key of ['rules', 'skills', 'commands', 'agents']) {
+  for (const key of ['rules', 'skills', 'commands']) {
     const rel = plugin[key]
     if (!rel || !fs.existsSync(join(PLUGIN_ROOT, rel))) fail(`plugin.json ${key} path missing`)
   }
@@ -151,18 +145,6 @@ export function validateWeave() {
     for (const section of COMMAND_SECTIONS) {
       if (!heading(markdown, section)) fail(`${file} missing ## ${section}`)
     }
-  }
-
-  const agents = listFiles(join(PLUGIN_ROOT, 'agents'), '.md').map((name) =>
-    name.replace(/\.md$/, ''),
-  )
-  if (!sameNames(agents, EXPECTED_AGENTS)) {
-    fail(`agents mismatch: ${agents.join(', ')}`)
-  }
-  for (const name of agents) {
-    const fm = frontmatter(read(join(PLUGIN_ROOT, 'agents', `${name}.md`)))
-    if (fm.name !== name) fail(`${name} agent name frontmatter is ${fm.name}`)
-    if (!fm.description) fail(`${name} agent missing description`)
   }
 
   const shellHook = hooks.hooks?.beforeShellExecution?.[0]
