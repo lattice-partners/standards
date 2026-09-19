@@ -1,29 +1,20 @@
-# lattice-standards
+# Weave (lattice-standards repo)
 
-Instructions for agents working **on this repo** (the standards themselves).
+This repository **is** the Weave Cursor plugin. There is no CLI and no `core/`.
 
-This repo is the portable core + Lattice stack + CI + scaffolding + the Weave
-Cursor plugin that client projects inherit. Changes here ripple to every
-project, so:
+## Changing the standard
 
-- **Treat every change as a standards change.** Land it via a focused commit
-  with a clear *why*. Material changes get an ADR (see `templates/ADR.md`)
-  and a `VERSION` bump. Keep `plugins/weave/.cursor-plugin/plugin.json`
-  aligned with `VERSION`.
-- **Keep the portable core stack-agnostic.** Anything TypeScript/Supabase/
-  Vercel-specific belongs in `stack/`, never in `core/`.
-- **Do not edit generated Weave rules by hand.** Change `core/` or
-  `stack/stack-baseline.md`, then run `npm run build:weave`.
-- **Lint before commit:** `npm run lint:md`. Tests include plugin validation
-  and Weave hook checks (`npm test`).
+- Edit rules in `plugins/weave/rules/` (hand-authored `.mdc` files).
+- Edit skills in `plugins/weave/skills/*/SKILL.md`.
+- Edit commands in `plugins/weave/commands/`.
+- Per-project config shape: `plugins/weave/templates/weave.md`.
 
-## The standard this repo defines
+Material changes: bump `VERSION`, align `plugins/weave/.cursor-plugin/plugin.json`,
+update `plugins/weave/CHANGELOG.md`, run `npm test` and `npm run lint:md`.
 
-The engineering standard lives in `core/`:
+## Verify
 
-- `core/agents-base.md` - base engineering standard projects compose from
-- `core/working-agreement.md` - posture, rituals, commit discipline, DoD
-- `core/security-baseline.md` - non-negotiable security rules
-- `core/memory-template/` - seed memory files for a new project
-
-These also govern work in this repo.
+```bash
+npm test
+npm run lint:md
+```

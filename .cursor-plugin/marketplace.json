@@ -4,7 +4,7 @@
     "name": "Lattice"
   },
   "metadata": {
-    "description": "Private Lattice marketplace. Weave is the engineering-standards plugin generated from this repository."
+    "description": "Private Lattice marketplace. Weave is the Cursor engineering-standards plugin."
   },
   "plugins": [
     {

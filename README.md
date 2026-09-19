@@ -1,357 +1,55 @@
-# lattice-standards
+# Weave
 
-The paved road for Lattice consulting projects: the shared engineering
-standards, AI-agent instructions, CI/CD, and scaffolding that every project
-inherits. Projects pin a versioned release and pull updates on their own cadence.
+Lattice engineering standards as a Cursor plugin. Install Weave, run
+`/setup-weave` on a project, edit rules and skills here when policy changes.
 
-New here? Read [how it works](docs/how-it-works.md) for the full model. This
-README is the practical guide: how to use it in a project, and how to change the
-standard itself.
+No npm install into client repos. No CLI. No vendored `.lattice/` folder.
 
----
+## Install locally
 
-## Use it in a project
-
-### Prerequisites
-
-Before you start, install:
-
-- **Node 24 or newer** (CI and `.nvmrc` target Node 24, the active LTS)
-- **npm 12** (`npm i -g npm@12`)
-- **git**, with `user.name` and `user.email` configured
-
-### Install the CLI
-
-Get the `lattice` command on your PATH:
-
-```bash
-npm i -g github:lattice-partners/standards#v0.8.0
-```
-
-Or skip the install and prefix any command with
-`npx github:lattice-partners/standards#v0.8.0`.
-
-### Use Weave in Cursor
-
-Weave is the Cursor plugin generated from the same `core/` files the CLI
-vendors. It does not replace the CLI or Git hooks.
-
-**Local smoke test** (this checkout):
+From this checkout:
 
 ```bash
 mkdir -p ~/.cursor/plugins/local
 ln -sfn "$(pwd)/plugins/weave" ~/.cursor/plugins/local/weave
 ```
 
-Then reload Cursor (`Developer: Reload Window`) and confirm Weave rules,
-skills, and commands are visible.
+Reload Cursor (`Developer: Reload Window`). Confirm rules, skills, and commands
+appear under Weave.
 
-**Team marketplace** (Cursor dashboard):
+## Team marketplace
 
-1. Import this GitHub repository as a team marketplace. Source for Weave is
-   `plugins/weave`.
-2. Leave the plugin **Default Off** for a pilot. Enable it for a small group.
-3. After the Cursor GitHub App is connected, turn on Auto Refresh so tagged
-   updates land without a manual re-import.
-4. Reindex at most once every ten minutes if a refresh looks stale.
-5. Promote Weave to **Required** once the pilot holds.
+1. Import `lattice-partners/standards` as a team marketplace in Cursor.
+2. Source path: `plugins/weave`.
+3. Start **Default Off**, promote to **Required** after a pilot.
+4. Enable Auto Refresh after connecting the Cursor GitHub App.
 
-There is no documented way to pin each teammate to an immutable plugin
-version. The git tag is the pin for the CLI; Cursor loads whatever the
-marketplace currently serves.
+Tag releases (`v1.0.0`) so the marketplace can pick up changes.
 
-### Set up a new project (greenfield)
+## What is in the plugin
 
-Follow these steps in order. Each step assumes the previous ones are done.
+| Piece | Purpose |
+| --- | --- |
+| **Rules** | Always-on: Weave explainer, suggested stack, testing, UX, quality, security, performance |
+| **Skills** | Lattice stack setup, Lattice Design, UI options toggle |
+| **Commands** | `/setup-weave` (write `weave.md`), `/review-weave` (manual audit) |
+| **`weave.md`** | Per-project opt-outs (created in each repo, not in this repo) |
 
-#### 1. Scaffold the project
+## Per-project setup
 
-```bash
-lattice init my-app
-cd my-app
-```
+On a client or Lattice repo:
 
-That vendors the standard into `.lattice/`, writes `AGENTS.md`, scaffolds the
-Lattice stack (`next-monorepo` by default), copies `.env.example` to
-`.env.local`, runs `git init`, creates an initial commit on `main`, creates a
-`dev` branch, and installs the git hooks.
+1. Install Weave in Cursor.
+2. Run `/setup-weave` to write `weave.md` (repo type, opt-outs, a few facts).
+3. Run `/review-weave` before shipping to check alignment.
 
-#### 2. Run the setup wizard
+No `weave.md` means full Lattice defaults. Testing, security, and UX rules
+cannot be opted out. Supabase, Clerk, Vercel, and Lattice Design can be.
 
-```bash
-lattice setup
-```
+## Change the plugin
 
-This owns the rest of setup in the same terminal. It runs and verifies git,
-dependency, provider CLI, and health-check commands; opens browser-only setup
-pages; and resumes by inspecting actual state. It does not create billable
-resources or require the GitHub CLI. Run it again to pick up where you left off.
+1. Edit files under `plugins/weave/`.
+2. Run `npm test` and `npm run lint:md`.
+3. Bump `VERSION` and `plugins/weave/.cursor-plugin/plugin.json` for releases.
 
-Or say yes when `lattice init` asks to run the wizard immediately after
-scaffolding.
-
-#### 3. Check your machine (optional)
-
-```bash
-lattice doctor
-```
-
-Run this before or after `npm install`. In a terminal it offers to run one safe
-fix at a time and re-checks the result. In CI or an agent's non-interactive
-process it only reports status and preserves a non-zero failure code.
-
-#### 4. Manual path (if you prefer)
-
-If you are not on an interactive terminal, follow these steps yourself:
-
-##### Create the GitHub repo and remote
-
-Create an empty repository on GitHub, then:
-
-```bash
-git remote add origin git@github.com:your-org/my-app.git
-git push -u origin main dev
-```
-
-Commit and push `package-lock.json` before relying on CI. The workflow runs
-`npm ci`, which requires the lockfile.
-
-##### Install dependencies
-
-```bash
-npm install
-```
-
-The `prepare` script runs `lattice hooks install`. It succeeds even if hooks were
-already installed, and it does not clobber an existing `core.hooksPath` (for
-example a client repo already on Husky).
-
-##### Wire up external services
-
-Do these in order. Each links to the setup guide in the installed package under
-`node_modules/@lattice/standards/stack/` (or read them from the
-[lattice-standards repo](https://github.com/lattice-partners/standards/tree/main/stack)):
-
-1. **Supabase** - create the project, enable Point-in-Time Recovery before the
-   first migration ([guide](stack/supabase/README.md))
-2. **Clerk** - create the application ([guide](stack/clerk/README.md))
-3. **Clerk + Supabase** - wire Clerk as a third-party auth provider in Supabase
-   ([guide](stack/supabase/README.md#4-wire-up-clerk-as-a-third-party-auth-provider))
-4. **Vercel** - two projects (`apps/web` and `apps/api` root directories),
-   link, env vars per environment, staging with manual promotion to production
-   ([guide](stack/vercel/README.md))
-5. **Firewall** - rate-limit rules on the api project
-   ([guide](stack/vercel/README.md#5-rate-limiting-via-vercel-firewall))
-
-`vercel link` is only required for the Vercel Marketplace install path (Clerk).
-You can configure Clerk and Supabase before linking Vercel.
-
-Fill `.env.local` at the **repo root** with the values from those services.
-`vercel env pull .env.local` must be run from the repo root, not from
-`apps/web`. The Supabase CLI reads a separate root `.env` file (not
-`.env.local`); see `supabase/README.md` in the scaffold.
-
-Run `lattice doctor` again until every required setting has a value.
-
-##### Run the app
-
-```bash
-npm run dev
-```
-
-- `apps/web` - <http://localhost:3000>
-- `apps/api` - <http://localhost:3001>
-
-Set `API_URL=http://localhost:3001` in `.env.local` so `apps/web` rewrites
-`/api/*` to the api app.
-
-##### Verify
-
-```bash
-npx turbo run typecheck lint test build
-lattice verify
-```
-
-`build` fails with a clear error if `API_URL` is missing from `.env.local`.
-
-For day-to-day operations after setup, see `RUNBOOK.md` in the project (also
-linked from the generated `AGENTS.md`).
-
-### Config-only scaffold (minimal)
-
-For a library or service that is not a web app:
-
-```bash
-lattice init my-lib --stack=minimal
-cd my-lib
-npm i -D github:lattice-partners/standards#v0.8.0
-```
-
-The minimal template ships no root `package.json`, so there is no `prepare`
-script and hooks are not reinstalled automatically on a fresh clone. Run
-`lattice hooks install` after `git clone` if you add hooks manually.
-
-### Existing (client) repo
-
-Non-destructive overlay:
-
-```bash
-lattice adopt .
-npm i -D github:lattice-partners/standards#v0.8.0
-```
-
-`adopt` injects a marked block into the existing `AGENTS.md` and leaves the rest
-of the repo alone. It does not impose the Lattice stack config on a client repo.
-
-### What your project gets
-
-- `.lattice/` - a vendored, CLI-managed copy of the core standard. Never
-  hand-edit it; `check` reports drift and `sync` overwrites it.
-- `AGENTS.md` - the entry point, carrying a `<!-- lattice:standards -->` block
-  that pins the version and points at `.lattice/`. Add your project's stack,
-  architecture, and context around it.
-- `CLAUDE.md` - a symlink to `AGENTS.md`, so Claude Code and every
-  AGENTS.md-aware tool read the identical instructions.
-- `.lattice/hooks/` - git hooks, switched on by `npm install`. They run the full
-  gate before every commit and block the things a reviewer cannot catch: secrets,
-  a secret in a `NEXT_PUBLIC_` variable, a migration that drops data or disables
-  RLS, and a branch that would never link to its ticket.
-- `.claude/settings.json` - guardrails for AI agents working in the repo. Denies
-  the irreversible commands outright and stops anyone switching permission
-  prompts off.
-
-See [how it works](docs/how-it-works.md) for the anatomy of the block and why it
-is structured this way.
-
-### Day to day
-
-Run `lattice` in the repo to open a full-screen shell: status for this project
-and a menu that redraws in place (check, sync, doctor, verify, ticket, release,
-docs). Or use the commands directly:
-
-```bash
-lattice ticket MIN-155   # start a ticket: branch off dev, named after the ticket
-lattice setup            # walk through project setup (GitHub, env, npm install)
-lattice verify           # run every check and say whether it is safe to ship
-lattice doctor           # check this machine is set up correctly
-lattice release          # print the dev -> main pull request body
-lattice check            # verify conformance (exit non-zero on drift; use in CI)
-lattice sync             # re-vendor .lattice/ to the installed version
-```
-
-`verify` and `doctor` are written to be read by anyone, not just engineers. They
-answer "is this safe to ship?" and "why does nothing work on my machine?" in
-plain language.
-
-With no terminal attached (CI, coding agents), there is no shell or prompt:
-commands run from flags and exit codes, and bare `lattice` prints help.
-
-### Staying current
-
-Bump the pin and pull the update in:
-
-```bash
-npm i -D github:lattice-partners/standards#vX.Y.Z
-npx lattice sync
-npx lattice check
-```
-
-`sync` re-vendors the standard docs, the stack baseline, and the git hooks, so a
-hook improvement made here reaches every project the same way a rule change does.
-
-`lattice init` also drops a CI workflow that runs `lattice check` on pushes to
-`main` and `dev` and on release tags. The gate itself is the pre-commit hook; CI
-is the backstop.
-
-### How work flows
-
-Ticket branches are named after the ticket and cut from `dev`. Merging into
-`dev` moves the ticket to In Review and deploys to staging; the pull request
-body stays empty because the ticket already holds the context. Releasing is a
-`dev` into `main` pull request whose body `lattice release` generates: closing
-keywords so each ticket closes on merge, then one line per shipped change.
-`main` takes direct commits for hotfixes only.
-
-The full model, including the tracker-side setup that cannot be enforced from
-the repo, is in `core/ticket-workflow.md`.
-
----
-
-## Work on the standard
-
-This repo is the source of the standard every project inherits, so treat every
-change as a standards change. `CLAUDE.md` holds the full working rules for this
-repo.
-
-### Layout
-
-| Path | Purpose |
-|---|---|
-| `core/` | Portable core: the stack-agnostic standard every project inherits |
-| `stack/` | Lattice stack: the vendored baseline, configs, and setup guides |
-| `plugins/weave/` | Cursor plugin generated from `core/` and `stack/stack-baseline.md` |
-| `.cursor-plugin/` | Private marketplace that points at Weave |
-| `hooks/` | Git hook shims, vendored into a project's `.lattice/hooks/` |
-| `ci/` | Reusable GitHub Actions: `standards-check` composite action + workflow |
-| `templates/` | The `next-monorepo` and `greenfield` scaffolds, plus the ADR template |
-| `cli/` | The `lattice` CLI (commands, hooks, workflow, interactive shell) |
-| `docs/` | `how-it-works.md` and the `adr/` decision records |
-| `VERSION` | Semver; projects pin to a tag |
-
-### Two tiers
-
-- **Portable core** (`core/`) - applied to every engagement, greenfield or
-  brownfield: engineering principles, agent practices, commit discipline,
-  security baseline.
-- **Lattice stack** (`stack/`) - applied fully on greenfield; used selectively
-  when we are guests in a client's existing repo.
-
-### Make a change
-
-1. Edit the relevant file in `core/` (or `stack/`, `ci/`, `templates/`).
-2. If canonical prose changed, run `npm run build:weave` so plugin rules stay
-   in sync.
-3. Run `npm run lint:md` and `npm test`.
-4. For a material change, add an ADR (copy `templates/ADR.md` into `docs/adr/`)
-   and bump `VERSION` (keep `plugins/weave/.cursor-plugin/plugin.json` aligned).
-5. Commit (Conventional Commits, no AI attribution), then tag and push:
-
-```bash
-git tag -a vX.Y.Z -m "summary"
-git push origin main --tags
-```
-
-Projects pick the change up when they bump their pin and run `lattice sync`.
-
----
-
-## Status
-
-v0.10.0 removes Weave subagents and Cursor hooks. Rules, skills, and slash
-commands remain; Git hooks are still the commit gate.
-
-v0.8.0 ships Weave, a Cursor plugin generated from the canonical standards,
-and lets agents commit and push without AI attribution.
-
-v0.7.1 fixes dev-branch recovery: `doctor` and `setup` both heal a repo whose
-initial commit never landed instead of repeating the same fatal git error, and
-`init` stops promising `npm run dev` on stacks that never ship a `dev` script.
-
-v0.7.0 makes setup self-executing and verifiable: commands run in the current
-terminal, every remediation is re-checked, provider setup is resumable, and the
-wizard only reports readiness after GitHub, Supabase, Clerk, Vercel, env, and
-local health checks pass.
-
-v0.6.1 is a full-screen interactive CLI: the shell, init, and setup wizard redraw
-in place instead of scrolling a transcript.
-
-v0.6.0 makes `lattice init` produce a working repo: git bootstrap, `.env.local`,
-hooks that never break `npm install`, a real `doctor` pre-flight, one correct
-setup sequence in this README, and shared Supabase types in `packages/db`.
-
-v0.5.0 shipped the full Lattice stack: the `next-monorepo` scaffold (Next.js,
-Supabase with RLS, Clerk, Vercel), local-first enforcement through vendored git
-hooks, agent guardrails, and the Linear-driven branching model.
-
-Next: brownfield stack adoption, and error tracking and spend caps, which are
-added per client today.
+See [AGENTS.md](AGENTS.md) for agent instructions on this repo.

@@ -1,0 +1,25 @@
+---
+description: Lattice code quality expectations. Cannot be opted out in weave.md.
+alwaysApply: true
+---
+
+# Code quality
+
+- **Simplicity first.** No "just in case" abstractions (YAGNI).
+- **DRY.** Extract logic duplicated in two or more places.
+- **Explicit over clever.** Readable, obvious code wins.
+- **Descriptive names.** Prefer `getActiveUserSessions` over `getSessions`.
+- **One concept per file.** Split when a file does two jobs.
+- **No dead or commented-out code.** No `TODO` without a linked issue.
+- **Doc-comment exported symbols** (what and why, not how).
+- **Typed boundaries.** Strictest typing available. In TypeScript: strict mode,
+  no `any` (use `unknown` + narrowing). Validate structured data at boundaries
+  with a schema; derive types from the schema.
+- **Error handling on every external call.** Never swallow errors. User-facing
+  failures get clear messages.
+- **Change only what the task requires.** No drive-by refactors or dependency
+  bumps in the same change.
+- **Read before you edit.** Match existing conventions in the file.
+- **Writing style:** no em dashes, no emojis (code, docs, commits, PRs, chat).
+- **Commits:** Conventional Commits, atomic, concise, no PII, no ticket IDs or
+  URLs in messages, no AI attribution trailers. Agents may commit and push.

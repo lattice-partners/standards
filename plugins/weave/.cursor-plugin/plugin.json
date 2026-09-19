@@ -1,8 +1,8 @@
 {
   "name": "weave",
   "displayName": "Weave",
-  "version": "0.10.0",
-  "description": "Lattice engineering standards for Cursor: generated rules, workflow skills, and slash commands.",
+  "version": "1.0.0",
+  "description": "Lattice engineering standards for Cursor: rules, skills, and setup/review commands.",
   "author": {
     "name": "Lattice"
   },

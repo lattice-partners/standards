@@ -1,0 +1,18 @@
+---
+description: Lattice performance expectations. Cannot be opted out in weave.md.
+alwaysApply: true
+---
+
+# Performance
+
+- **Measure before optimizing.** Do not add caching or complexity without evidence.
+- **Prefer server rendering** where the stack allows. Use client components only
+  for interaction.
+- **Avoid N+1 queries** and unbounded lists. Paginate or cursor large datasets.
+- **Index columns** used in filters and RLS policies.
+- **Keep bundles lean.** Do not import heavy libraries for one helper.
+- **Images and fonts:** use the framework's optimized loading patterns.
+- **Core Web Vitals matter** on user-facing apps. Fix regressions you introduce.
+
+During `/review-weave`, call out obvious performance risks (missing indexes,
+client-side secret access, unbounded fetches).

@@ -1,21 +1,9 @@
 {
-  "name": "@lattice/standards",
-  "version": "0.10.0",
+  "name": "@lattice/weave",
+  "version": "1.0.0",
   "private": true,
-  "description": "The paved road for Lattice consulting projects: shared engineering standards, AI-agent instructions, CI/CD, and scaffolding.",
+  "description": "Weave — Lattice engineering standards as a Cursor plugin.",
   "type": "module",
-  "bin": {
-    "lattice": "cli/index.js"
-  },
-  "files": [
-    "cli",
-    "core",
-    "stack",
-    "ci",
-    "hooks",
-    "templates",
-    "VERSION"
-  ],
   "engines": {
     "node": ">=24"
   },
@@ -23,7 +11,7 @@
     "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\"",
     "build:weave": "node scripts/build-weave.mjs",
     "validate:weave": "node scripts/validate-weave.mjs",
-    "test": "node cli/test.js && node scripts/validate-weave.mjs"
+    "test": "node scripts/validate-weave.mjs"
   },
   "devDependencies": {
     "ajv": "^8.17.1",

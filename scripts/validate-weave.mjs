@@ -1,35 +1,18 @@
 #!/usr/bin/env node
 // Offline Weave plugin validation: Cursor schemas, versions, frontmatter,
-// discovered names, command structure, and generated-rule freshness.
+// discovered names, and command structure.
 
 import fs from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
-import { checkRules } from './build-weave.mjs'
+import { checkRules, EXPECTED_RULES } from './build-weave.mjs'
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
 const PLUGIN_ROOT = join(ROOT, 'plugins/weave')
-const EXPECTED_SKILLS = [
-  'setup-repository',
-  'plan-change',
-  'implement-change',
-  'debug-failure',
-  'verify-change',
-  'review-change',
-  'ship-change',
-  'release-change',
-]
-const EXPECTED_COMMANDS = [
-  'setup',
-  'plan',
-  'debug',
-  'review',
-  'verify',
-  'ship',
-  'release',
-]
+const EXPECTED_SKILLS = ['lattice-design', 'ui-options-toggle', 'lattice-stack']
+const EXPECTED_COMMANDS = ['setup-weave', 'review-weave']
 const COMMAND_SECTIONS = ['Preflight', 'Plan', 'Commands', 'Verification', 'Summary']
 
 function readJson(path) {
@@ -113,6 +96,11 @@ export function validateWeave() {
     const rel = plugin[key]
     if (!rel || !fs.existsSync(join(PLUGIN_ROOT, rel))) fail(`plugin.json ${key} path missing`)
   }
+
+  if (!fs.existsSync(join(PLUGIN_ROOT, 'templates/weave.md'))) {
+    fail('missing templates/weave.md')
+  }
+
   const skills = listDirs(join(PLUGIN_ROOT, 'skills'))
   if (!sameNames(skills, EXPECTED_SKILLS)) {
     fail(`skills mismatch: ${skills.join(', ')}`)
@@ -145,6 +133,11 @@ export function validateWeave() {
   }
 
   for (const problem of checkRules()) fail(problem)
+
+  const ruleCount = listFiles(join(PLUGIN_ROOT, 'rules'), '.mdc').length
+  if (ruleCount !== EXPECTED_RULES.length) {
+    fail(`expected ${EXPECTED_RULES.length} rules, found ${ruleCount}`)
+  }
 
   return problems
 }

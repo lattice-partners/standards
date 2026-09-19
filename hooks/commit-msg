@@ -1,6 +1,0 @@
-#!/usr/bin/env sh
-# Managed by lattice-standards. Do not edit: "lattice sync" overwrites this file
-# and "lattice check" reports local changes as drift.
-CLI="./node_modules/@lattice/standards/cli/index.js"
-[ -f "$CLI" ] || CLI="./cli/index.js"
-exec node "$CLI" hook commit-msg "$@"
