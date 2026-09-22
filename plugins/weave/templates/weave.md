@@ -11,7 +11,8 @@ No file means full Lattice defaults.
 - **notes** — optional facts the agent would miss (tokens file, do not touch
   `legacy/`, tracker prefix)
 
-You cannot opt out of testing, security, or basic front-end UX rules.
+You cannot opt out of testing, security, or basic front-end UX principles
+(`principle-testing`, `principle-security`, `principle-frontend-ux`).
 
 ## Example
 

@@ -1,23 +1,25 @@
 ---
+name: principle-weave
 description: What Weave is, how to read weave.md, and what can be opted out on this project.
 alwaysApply: true
 ---
 
 # Weave
 
-Weave is Lattice's engineering standard in Cursor. Rules, skills, and commands
-live in the Weave plugin. There is no CLI and no vendored `.lattice/` copy.
+Weave is Lattice's engineering standard in Cursor. Principle skills, task skills,
+and commands live in the Weave plugin. There is no CLI and no vendored `.lattice/`
+copy.
 
 ## On every project
 
 1. Read `weave.md` at the repo root if it exists. No file means full Lattice
    defaults.
-2. Apply all always-on rules (testing, security, front-end UX, code quality,
+2. Apply all always-on principles (testing, security, front-end UX, code quality,
    performance).
 3. Respect opt-outs in `weave.md` for Supabase, Clerk, Vercel, and Lattice
    Design. Do not impose our stack on tools they turned off.
-4. Use skills when the task matches: Lattice stack setup, Lattice Design, UI
-   variants.
+4. Use task skills when the work matches: Lattice stack setup, Lattice Design,
+   UI variants.
 
 ## weave.md
 

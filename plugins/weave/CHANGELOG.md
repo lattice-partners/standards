@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0
+
+Replace always-on `.mdc` rules with `principle-*` skills (`alwaysApply: true`).
+Remove the plugin `rules` bundle.
+
 ## 1.0.0
 
 Weave-only repo. Remove CLI, core, stack, templates, hooks, and docs. Policy

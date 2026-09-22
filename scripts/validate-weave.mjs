@@ -7,11 +7,16 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
-import { checkRules, EXPECTED_RULES } from './build-weave.mjs'
+import { checkPrinciples, EXPECTED_PRINCIPLES } from './build-weave.mjs'
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
 const PLUGIN_ROOT = join(ROOT, 'plugins/weave')
-const EXPECTED_SKILLS = ['lattice-design', 'ui-options-toggle', 'lattice-stack']
+const EXPECTED_SKILLS = [
+  ...EXPECTED_PRINCIPLES,
+  'lattice-design',
+  'ui-options-toggle',
+  'lattice-stack',
+]
 const EXPECTED_COMMANDS = ['setup-weave', 'review-weave']
 const COMMAND_SECTIONS = ['Preflight', 'Plan', 'Commands', 'Verification', 'Summary']
 
@@ -92,9 +97,12 @@ export function validateWeave() {
     fail('marketplace source must be ./plugins/weave')
   }
 
-  for (const key of ['rules', 'skills', 'commands']) {
+  for (const key of ['skills', 'commands']) {
     const rel = plugin[key]
     if (!rel || !fs.existsSync(join(PLUGIN_ROOT, rel))) fail(`plugin.json ${key} path missing`)
+  }
+  if (plugin.rules) {
+    fail('plugin.json must not declare rules; use principle-* skills instead')
   }
 
   if (!fs.existsSync(join(PLUGIN_ROOT, 'templates/weave.md'))) {
@@ -132,12 +140,7 @@ export function validateWeave() {
     }
   }
 
-  for (const problem of checkRules()) fail(problem)
-
-  const ruleCount = listFiles(join(PLUGIN_ROOT, 'rules'), '.mdc').length
-  if (ruleCount !== EXPECTED_RULES.length) {
-    fail(`expected ${EXPECTED_RULES.length} rules, found ${ruleCount}`)
-  }
+  for (const problem of checkPrinciples()) fail(problem)
 
   return problems
 }

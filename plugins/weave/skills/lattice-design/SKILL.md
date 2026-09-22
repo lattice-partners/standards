@@ -5,8 +5,8 @@ description: Lattice Design — our UI system (components, density, tokens). Ski
 
 # Lattice Design
 
-Skip when `weave.md` opted out of `lattice-design`. Front-end UX rules still
-apply.
+Skip when `weave.md` opted out of `lattice-design`. `principle-frontend-ux`
+still applies.
 
 ## Stance
 

@@ -1,4 +1,5 @@
 ---
+name: principle-suggested-stack
 description: Lattice default providers for database, auth, hosting, and design unless weave.md opted out.
 alwaysApply: true
 ---
@@ -15,7 +16,7 @@ When a project has not opted out in `weave.md`, prefer these defaults:
 | UI | Lattice Design (see `lattice-design` skill) |
 
 If `weave.md` opts out of a tool, do not recommend or scaffold it. UX and
-security rules still apply.
+security principles still apply.
 
 For setup steps, use the `lattice-stack` skill. For UI composition, use the
 `lattice-design` skill.

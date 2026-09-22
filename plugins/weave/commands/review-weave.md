@@ -1,10 +1,11 @@
 ---
-description: Manual audit — compare the repo to Weave rules and this project's weave.md. Report only; do not autofix unless asked.
+description: Manual audit — compare the repo to Weave principles and this project's weave.md. Report only; do not autofix unless asked.
 ---
 
 # Review Weave
 
-Read-only alignment check against Weave rules and the project `weave.md`.
+Read-only alignment check against Weave principle skills and the project
+`weave.md`.
 
 ## Preflight
 
@@ -14,13 +15,13 @@ Read-only alignment check against Weave rules and the project `weave.md`.
 
 ## Plan
 
-List which always-on rules you will check and which stack or design tools apply
+List which principle skills you will check and which stack or design tools apply
 given opt-outs.
 
 ## Commands
 
 1. Read `weave.md` (missing = full defaults; say so).
-2. Check always-on rules: testing, security, front-end UX, code quality,
+2. Check always-on principles: testing, security, front-end UX, code quality,
    performance.
 3. Skip tools listed under opt-out (do not fail for missing Supabase or
    Lattice Design if they opted out).
@@ -31,7 +32,7 @@ Do not implement fixes unless explicitly asked.
 
 ## Verification
 
-Every finding cites a path or rule. Verdict is approve or request changes.
+Every finding cites a path or principle. Verdict is approve or request changes.
 
 ## Summary
 

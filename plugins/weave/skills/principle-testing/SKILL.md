@@ -1,4 +1,5 @@
 ---
+name: principle-testing
 description: Lattice testing expectations. Cannot be opted out in weave.md.
 alwaysApply: true
 ---

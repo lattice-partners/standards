@@ -1,4 +1,5 @@
 ---
+name: principle-frontend-ux
 description: Lattice front-end UX expectations (show then edit, states, copy, mobile, themes). Not the design system.
 alwaysApply: true
 ---

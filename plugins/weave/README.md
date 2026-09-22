@@ -1,12 +1,13 @@
 # Weave plugin
 
-Cursor plugin source. Rules are hand-authored in `rules/`. Skills and commands
-live alongside `templates/weave.md` for per-project config.
+Cursor plugin source. Always-on standards are `principle-*` skills. Task skills
+and commands live alongside `templates/weave.md` for per-project config.
 
 ## Contents
 
-- **Rules** — weave, suggested-stack, testing, frontend-ux, code-quality,
-  security, performance
+- **Principles** — principle-weave, principle-suggested-stack, principle-testing,
+  principle-frontend-ux, principle-code-quality, principle-security,
+  principle-performance
 - **Skills** — lattice-design, ui-options-toggle, lattice-stack
 - **Commands** — setup-weave, review-weave
 
