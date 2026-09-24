@@ -7,24 +7,33 @@ No npm install into client repos. No CLI. No vendored `.lattice/` folder.
 
 ## Install locally
 
-From this checkout:
+Cursor only live-loads plugins under `~/.cursor/plugins/local`. A symlink to
+a repo elsewhere is skipped. Keep the git checkout *inside* that folder, then
+symlink `weave` to `plugins/weave` (target stays in-folder):
 
 ```bash
 mkdir -p ~/.cursor/plugins/local
-ln -sfn "$(pwd)/plugins/weave" ~/.cursor/plugins/local/weave
+# repo lives at ~/.cursor/plugins/local/lattice-standards
+ln -sfn lattice-standards/plugins/weave ~/.cursor/plugins/local/weave
 ```
 
-Reload Cursor (`Developer: Reload Window`). Confirm rules, skills, and commands
-appear under Weave.
+`~/Lattice/lattice-standards` can be a symlink to that checkout. Edit skills
+and commands in git, then fully quit Cursor (`Cmd+Q`) and reopen so the
+plugin reloads. Do not install the marketplace copy of Weave at the same
+time; it wins over local.
 
 ## Team marketplace
 
-1. Import `lattice-partners/standards` as a team marketplace in Cursor.
-2. Source path: `plugins/weave`.
-3. Start **Default Off**, promote to **Required** after a pilot.
-4. Enable Auto Refresh after connecting the Cursor GitHub App.
+When local Weave is good enough to share:
 
-Tag releases (`v1.0.0`) so the marketplace can pick up changes.
+1. Merge to `main` and tag if you version the plugin.
+2. Import `lattice-partners/standards` as a team marketplace in Cursor.
+3. Source path: `plugins/weave`.
+4. Start **Default Off**, promote to **Required** after a pilot.
+5. Enable Auto Refresh after connecting the Cursor GitHub App.
+
+Until then, iterate locally only. A marketplace install of the same name
+`weave` overrides `~/.cursor/plugins/local/weave`.
 
 ## What is in the plugin
 
