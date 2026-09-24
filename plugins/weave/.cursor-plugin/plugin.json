@@ -1,7 +1,7 @@
 {
   "name": "weave",
   "displayName": "Weave",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Lattice engineering standards for Cursor: principle skills, task skills, and setup/review commands.",
   "author": {
     "name": "Lattice"

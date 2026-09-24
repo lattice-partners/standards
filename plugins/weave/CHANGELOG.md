@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+`/setup-weave` interviews for every `weave.md` field (repo type, each
+opt-out, notes including boot / prove / proof) and writes only after
+confirmation.
+
 ## 1.1.0
 
 Replace always-on `.mdc` rules with `principle-*` skills (`alwaysApply: true`).

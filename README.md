@@ -40,7 +40,8 @@ Tag releases (`v1.0.0`) so the marketplace can pick up changes.
 On a client or Lattice repo:
 
 1. Install Weave in Cursor.
-2. Run `/setup-weave` to write `weave.md` (repo type, opt-outs, a few facts).
+2. Run `/setup-weave`. It asks for every `weave.md` field, then writes the
+   file (repo type, opt-outs, notes).
 3. Run `/review-weave` before shipping to check alignment.
 
 No `weave.md` means full Lattice defaults. Testing, security, and UX rules
