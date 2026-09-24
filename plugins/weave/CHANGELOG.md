@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.3
+
+`lattice-stack`: one Next.js app at the repo root, or a monorepo with
+`apps/web`, `apps/server`, and `supabase/`. One Supabase project; local and
+`dev` use the staging branch and Clerk Development keys; `main` uses the
+production branch and Production keys. `API_URL` points at the matching
+`apps/server` deploy. RLS uses Clerk `sub` and `o.id`.
+
+Rename `ui-options-toggle` to `utility-ui-options-toggle`. Security assumes
+a site is private unless it is clearly public. Do not replace a stack tool
+the project already chose.
+
 ## 1.1.2
 
 `/setup-weave` uses AskQuestion, one field per turn. Each question observes

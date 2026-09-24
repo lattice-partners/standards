@@ -1,5 +1,5 @@
 ---
-name: ui-options-toggle
+name: utility-ui-options-toggle
 description: Build three UI variants of a screen or component so the team can compare and pick a direction.
 ---
 

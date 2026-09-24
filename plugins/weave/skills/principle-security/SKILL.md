@@ -11,6 +11,7 @@ implementation, explain implications, get explicit approval when needed.
 
 ## Baseline
 
+- Unless this is a clearly public project (i.e. a massive consumer app), assume that the site should not be accessible to the public. If you are not sure, ask and make clear note of it. If it should not be public: 1. Hide behind a login or password.  2. Hide the site from search engines and crawlers (AI, google, bing, etc.)
 - Validate and sanitize all inputs at the API boundary.
 - Authenticate server-side on every request.
 - Authorize at the data layer, not just the UI.

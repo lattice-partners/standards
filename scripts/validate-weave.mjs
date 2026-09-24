@@ -14,7 +14,7 @@ const PLUGIN_ROOT = join(ROOT, 'plugins/weave')
 const EXPECTED_SKILLS = [
   ...EXPECTED_PRINCIPLES,
   'lattice-design',
-  'ui-options-toggle',
+  'utility-ui-options-toggle',
   'lattice-stack',
 ]
 const EXPECTED_COMMANDS = ['setup-weave', 'review-weave']

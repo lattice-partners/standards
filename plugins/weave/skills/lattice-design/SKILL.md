@@ -6,7 +6,7 @@ description: Lattice Design — our UI system (components, density, tokens). Ski
 # Lattice Design
 
 Skip when `weave.md` opted out of `lattice-design`. `principle-frontend-ux`
-still applies.
+still applies in all projects.
 
 ## Stance
 
@@ -34,4 +34,4 @@ still applies.
 1. Read repo design tokens or `globals.css` if present; repo wins over defaults.
 2. If no accent is defined, ask before inventing one.
 3. Compose from existing primitives.
-4. For three variants to compare, use the `ui-options-toggle` skill.
+4. For three variants to compare, use the `utility-ui-options-toggle` skill.

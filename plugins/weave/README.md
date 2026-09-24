@@ -8,7 +8,7 @@ and commands live alongside `templates/weave.md` for per-project config.
 - **Principles** — principle-weave, principle-suggested-stack, principle-testing,
   principle-frontend-ux, principle-code-quality, principle-security,
   principle-performance
-- **Skills** — lattice-design, ui-options-toggle, lattice-stack
+- **Skills** — lattice-design, utility-ui-options-toggle, lattice-stack
 - **Commands** — setup-weave, review-weave
 
 ## Local install
