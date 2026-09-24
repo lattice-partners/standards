@@ -24,7 +24,8 @@ copy.
 ## weave.md
 
 Short project config only: whose repo, opt-outs, a few facts the agent would
-miss. Not architecture docs. Run `/setup-weave` to create or update it.
+miss. Not architecture docs. Run `/setup-weave` to create or update it. That
+command interviews for every field before it writes.
 
 ## Repo types
 
