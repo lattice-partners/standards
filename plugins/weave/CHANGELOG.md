@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.2
+
+`/setup-weave` uses AskQuestion, one field per turn. Each question observes
+what is already in the repo or Weave.md and asks keep or edit.
+
 ## 1.1.1
 
 `/setup-weave` interviews for every `weave.md` field (repo type, each

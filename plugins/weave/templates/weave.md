@@ -8,9 +8,10 @@ No file means full Lattice defaults.
 - **repo** — `lattice-owned` or `client existing`
 - **opt-out** — list of Lattice defaults this project does not use, each with a
   one-line reason. Allowed: `supabase`, `clerk`, `vercel`, `lattice-design`
-- **notes** — optional facts the agent would miss. `/setup-weave` asks for
-  tokens / leave-alone paths, how to boot the app, the prove path, and where
-  proof lives. Empty notes are allowed.
+- **notes** — a short list later agents always read. Facts Lattice defaults
+  would get wrong on this already-running repo, not a copy of a long
+  Weave.md. `/setup-weave` proposes a few bullets from what it found and
+  asks keep, add, or leave empty.
 
 You cannot opt out of testing, security, or basic front-end UX principles
 (`principle-testing`, `principle-security`, `principle-frontend-ux`).
