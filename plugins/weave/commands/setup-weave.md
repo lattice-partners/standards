@@ -34,29 +34,69 @@ Do **not** add an option named Other. The UI already appends it.
 **Every question follows this shape:**
 
 1. Observe the current value (existing weave file first, then the repo).
-2. Prompt like "I found X. Keep it, or change it?"
-3. Option A is always **Keep:** plus a **short** observed label (one line).
+2. When a value is already set, prompt like "I found X. Keep it, or change it?"
+3. When a value is already set, option A is **Keep:** plus a **short**
+   observed label (one line).
 4. Other options are the real alternatives (the other repo type, opt out,
    skip). Never put a paragraph of project lore in an **option label**.
    The notes **prompt** may list a few proposed bullets.
 
-If you found nothing, option A is **Not set:** plus "record the usual
-Lattice default" or "leave this out of weave.md", and the other option
-sets or opts out.
+If you found nothing for a Lattice default (repo type, Supabase, Clerk,
+Vercel, Lattice Design):
+
+- Do not say "Not set", "I found no weave.md", or "Keep the Lattice default".
+- Do not put a README summary in the prompt.
+- Option A is **Use Lattice default [name] setup**. Fill in the name:
+  `lattice-owned`, `Supabase`, `Clerk`, `Vercel`, or `Lattice Design`.
+- Ask one field per turn. Do not mention the other tools in that prompt.
+- The prompt is one or two short sentences. Say what that field's default
+  means, then ask which value to record. Use the sentence for that field
+  only. Do not add setup steps.
+
+Meaning, in that field's prompt only:
+
+- Repo: Lattice default treats this as a Lattice-owned repo.
+- Supabase: Lattice default uses Supabase as the database, the way Lattice
+  expects.
+- Clerk: Lattice default uses Clerk for auth, the way Lattice expects.
+- Vercel: Lattice default uses Vercel for deployment, the way Lattice
+  expects.
+- Lattice Design: Lattice default uses Lattice Design for UI.
+
+Repo prompt when nothing is recorded:
+
+```text
+No repo type is recorded yet. Lattice default treats this as a Lattice-owned repo. Which should I record?
+```
+
+Options: `Use Lattice default lattice-owned setup`, then `Client existing`.
+
+Supabase, Clerk, Vercel, and Lattice Design when nothing is recorded: that
+field's one-line meaning, then "Use that, or opt out?" Options:
+`Use Lattice default [name] setup`, then `Opt out`.
+
+For a field with no Lattice default (boot, done path, proof), option A is
+**Leave this out of weave.md** when it is empty. Do not use "Not set:" or
+"Use Lattice default" there.
 
 **Fields, in order:**
 
-1. **Repo.** Observe `repo:` in weave/Weave.md, or org/README. Keep
-   `lattice-owned` or `client existing`, or switch to the other.
+1. **Repo.** Observe `repo:` in weave/Weave.md, or org/README. If it is
+   set, keep `lattice-owned` or `client existing`, or switch to the other.
+   If it is unset, use the repo prompt and options above.
 2. **Supabase.** Observe `supabase/` , Supabase packages, or an existing
-   opt-out. Keep using Lattice Supabase, or opt out. Reason question only
-   on opt out (short choices: already has Postgres, not a DB app).
+   opt-out. Keep using Lattice Supabase, or opt out. If unset, use the
+   Supabase meaning sentence. Reason question only on opt out (short
+   choices: already has Postgres, not a DB app).
 3. **Clerk.** Observe Clerk packages or env names, or an existing opt-out.
-   Keep Clerk, or opt out, then reason if needed.
+   Keep Clerk, or opt out. If unset, use the Clerk meaning sentence, then
+   reason if needed.
 4. **Vercel.** Observe Vercel config or an existing opt-out. Keep Lattice
-   Vercel, or opt out, then reason if needed.
+   Vercel, or opt out. If unset, use the Vercel meaning sentence, then
+   reason if needed.
 5. **Lattice Design.** Observe Lattice Design / tokens notes, or an
-   existing opt-out. Keep it, or opt out (own UI), then reason if needed.
+   existing opt-out. Keep it, or opt out (own UI). If unset, use the
+   Lattice Design meaning sentence, then reason if needed.
 6. **Notes.** See **Notes question copy** below. Do this even when
    Weave.md already exists. Do not ask "copy themes into weave.md".
 7. **Boot, done path, proof.** Ask these only if that fact is not already

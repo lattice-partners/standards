@@ -1,6 +1,6 @@
 {
   "name": "@lattice/weave",
-  "version": "1.1.18",
+  "version": "1.1.20",
   "private": true,
   "description": "Weave — Lattice engineering standards as a Cursor plugin.",
   "type": "module",

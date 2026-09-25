@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.1.20
+
+`/setup-weave`: an unset Lattice default is the option "Use Lattice default
+[name] setup". Each field is its own question. Supabase, Clerk, and Vercel
+prompts say that tool is the database, auth, or deployment, the way Lattice
+expects.
+
+## 1.1.19
+
+`principle-frontend-ux` + `lattice-design`: wizard modals — header Back/Close,
+footer Cancel + single primary, progressive disclosure, rounded header control
+hovers.
+
 ## 1.1.18
 
 `lattice-design`: hover is only for a control that will respond. Disabled and
