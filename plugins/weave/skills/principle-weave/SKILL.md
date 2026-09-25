@@ -15,7 +15,7 @@ copy.
 1. Read `weave.md` at the repo root if it exists. No file means full Lattice
    defaults.
 2. Apply all always-on principles (testing, security, front-end UX, code quality,
-   performance).
+   performance). Apply `principle-demo` when the user asked for a mock-up.
 3. Respect opt-outs in `weave.md` for Supabase, Clerk, Vercel, and Lattice
    Design. Do not impose our stack on tools they turned off.
 4. Use task skills when the work matches: Lattice stack setup, Lattice Design,

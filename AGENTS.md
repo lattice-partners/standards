@@ -18,3 +18,7 @@ update `plugins/weave/CHANGELOG.md`, run `npm test` and `npm run lint:md`.
 npm test
 npm run lint:md
 ```
+
+## Local demo
+
+`apps/web` is a session-only marketing dashboard used to exercise Lattice Design and front-end UX. It is not the plugin. Run it with `npm run dev` inside `apps/web`. No database or auth.

@@ -22,7 +22,9 @@ given opt-outs.
 
 1. Read `weave.md` (missing = full defaults; say so).
 2. Check always-on principles: testing, security, front-end UX, code quality,
-   performance.
+   performance. If the change is a demo or mock-up, also check
+   `principle-demo` (no live database, session store, multiple reachable
+   flows).
 3. Skip tools listed under opt-out (do not fail for missing Supabase or
    Lattice Design if they opted out).
 4. List findings with severity (blocker / should-fix / nit). If clean, say what

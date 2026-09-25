@@ -16,6 +16,7 @@ export const EXPECTED_PRINCIPLES = [
   'principle-code-quality',
   'principle-security',
   'principle-performance',
+  'principle-demo',
 ]
 
 function frontmatter(markdown) {

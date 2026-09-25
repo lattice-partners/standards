@@ -5,11 +5,12 @@ and commands live alongside `templates/weave.md` for per-project config.
 
 ## Contents
 
-- **Principles** — principle-weave, principle-suggested-stack, principle-testing,
+- **Principle Skills** — principle-weave, principle-suggested-stack, principle-testing,
   principle-frontend-ux, principle-code-quality, principle-security,
-  principle-performance
-- **Skills** — lattice-design, ui-options-toggle, lattice-stack
-- **Commands** — setup-weave, review-weave
+  principle-performance, principle-demo
+- **Lattice Skills** — lattice-design,lattice-stack
+- **Utility Skills** — help do a very specific task, not always used - utility-ui-options-toggle
+- **Commands** — all relevant to Weave - setup-weave, review-weave, utility-weave-improvements
 
 ## Local install
 
