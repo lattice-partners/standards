@@ -5,7 +5,7 @@ description: Build three UI variants of a screen or component so the team can co
 
 # UI options toggle
 
-When asked to explore UI directions:
+Only run this when the user explicitly asks to explore multiple UI directions at once:
 
 1. Clarify the screen or component and constraints (Lattice Design unless
    opted out, mobile, light/dark if applicable).

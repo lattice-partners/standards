@@ -39,9 +39,10 @@ Until then, iterate locally only. A marketplace install of the same name
 
 | Piece | Purpose |
 | --- | --- |
-| **Rules** | Always-on: Weave explainer, suggested stack, testing, UX, quality, security, performance |
-| **Skills** | Lattice stack setup, Lattice Design, UI options toggle |
-| **Commands** | `/setup-weave` (write `weave.md`), `/review-weave` (manual audit) |
+| **Principles** | Always used: Weave explainer, suggested stack, testing, UX, quality, security, performance, demo (mock-ups only) |
+| **Lattice** | Preferences and recommendations; opt out in `weave.md`: stack setup, Lattice Design |
+| **Utility** | Use whenever the task fits: UI options toggle |
+| **Commands** | `/setup-weave` (write `weave.md`), `/review-weave` (manual audit), `/utility-weave-improvements` (manual chat report for the Weave team) |
 | **`weave.md`** | Per-project opt-outs (created in each repo, not in this repo) |
 
 ## Per-project setup

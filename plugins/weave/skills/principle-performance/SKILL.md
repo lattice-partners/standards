@@ -15,5 +15,7 @@ alwaysApply: true
 - **Images and fonts:** use the framework's optimized loading patterns.
 - **Core Web Vitals matter** on user-facing apps. Fix regressions you introduce.
 
+Actually test these occasionally.
+
 During `/review-weave`, call out obvious performance risks (missing indexes,
 client-side secret access, unbounded fetches).

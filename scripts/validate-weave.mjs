@@ -17,7 +17,11 @@ const EXPECTED_SKILLS = [
   'utility-ui-options-toggle',
   'lattice-stack',
 ]
-const EXPECTED_COMMANDS = ['setup-weave', 'review-weave']
+const EXPECTED_COMMANDS = [
+  'review-weave',
+  'setup-weave',
+  'utility-weave-improvements',
+]
 const COMMAND_SECTIONS = ['Preflight', 'Plan', 'Commands', 'Verification', 'Summary']
 
 function readJson(path) {

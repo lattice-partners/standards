@@ -22,7 +22,7 @@ You cannot opt out of testing, security, or basic front-end UX principles
 # Weave
 repo: client existing
 opt-out:
-  - supabase: they already have Postgres
+  - supabase: they already have Neon
   - lattice-design: they have their own UI
 notes:
   - tokens: src/styles/tokens.css
