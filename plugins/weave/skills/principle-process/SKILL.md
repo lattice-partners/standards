@@ -7,7 +7,7 @@ alwaysApply: true
 # Process
 
 Applies on every project. Repository-specific commands and verification live in
-the marked Weave block in root `AGENTS.md`.
+the "Run and test" section of root `AGENTS.md`.
 
 ## Task protocol
 

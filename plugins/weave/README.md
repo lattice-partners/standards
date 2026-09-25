@@ -1,7 +1,7 @@
 # Weave plugin
 
 Cursor plugin source. `/setup-weave` writes `weave.md` (repo type, opt-outs,
-Weave notes) and the marked Weave block in root `AGENTS.md` (components,
+Weave notes) and the "Run and test" section of root `AGENTS.md` (components,
 verification, project notes).
 
 ## Contents
@@ -12,7 +12,7 @@ verification, project notes).
 - **Lattice Skills** - lattice-design, lattice-stack
 - **Utility Skills** - utility-ui-options-toggle
 - **Commands** - setup-weave, review-weave, utility-weave-improvements
-- **Template** - `templates/weave.md` (AGENTS block scaffold lives in `setup-weave` command)
+- **Template** - `templates/weave.md` ("Run and test" scaffold lives in the `setup-weave` command)
 
 ## Local install
 

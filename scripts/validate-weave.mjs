@@ -24,7 +24,7 @@ const EXPECTED_COMMANDS = [
 ]
 const COMMAND_SECTIONS = ['Preflight', 'Plan', 'Commands', 'Verification', 'Summary']
 const WEAVE_TEMPLATE_SECTIONS = ['Fields']
-const SETUP_WEAVE_AGENTS_BLOCK_SECTIONS = [
+const RUN_AND_TEST_SECTIONS = [
   'Components',
   'Shared prerequisites',
   'Boundaries',
@@ -132,14 +132,14 @@ export function validateWeave() {
   const setupWeavePath = join(PLUGIN_ROOT, 'commands/setup-weave.md')
   const setupWeave = read(setupWeavePath)
   if (
-    !setupWeave.includes('<!-- weave:start -->') ||
-    !setupWeave.includes('<!-- weave:end -->')
+    !setupWeave.includes('<!-- run-and-test:start -->') ||
+    !setupWeave.includes('<!-- run-and-test:end -->')
   ) {
-    fail('setup-weave.md must embed the AGENTS.md Weave block template')
+    fail('setup-weave.md must embed the "Run and test" section template')
   }
-  for (const section of SETUP_WEAVE_AGENTS_BLOCK_SECTIONS) {
+  for (const section of RUN_AND_TEST_SECTIONS) {
     if (!new RegExp(`^### ${section}\\s*$`, 'm').test(setupWeave)) {
-      fail(`setup-weave.md Weave block template missing ### ${section}`)
+      fail(`setup-weave.md "Run and test" template missing ### ${section}`)
     }
   }
 

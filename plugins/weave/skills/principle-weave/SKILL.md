@@ -1,6 +1,6 @@
 ---
 name: principle-weave
-description: Read weave.md and the AGENTS.md Weave block; follow principle-process.
+description: Read weave.md and the "Run and test" section of AGENTS.md; follow principle-process.
 alwaysApply: true
 ---
 
@@ -14,9 +14,9 @@ copy.
 
 1. Read root `weave.md` if it exists. No file means full Lattice defaults and no
    recorded opt-outs.
-2. Read the marked Weave block in root `AGENTS.md` (`<!-- weave:start -->` …
-   `<!-- weave:end -->`) for components, verification, prerequisites,
-   boundaries, and project notes.
+2. Read the "Run and test" section in root `AGENTS.md`
+   (`<!-- run-and-test:start -->` … `<!-- run-and-test:end -->`) for
+   components, verification, prerequisites, boundaries, and project notes.
 3. Follow `principle-process` for task protocol, risk, and definition of done.
 4. Apply all other always-on principles. Apply `principle-demo` when the user
    asks for a mock-up or when Weave notes say the repo is a demo prototype.
@@ -27,8 +27,8 @@ copy.
    UI variants.
 7. Never report work complete when required verification cannot run.
 
-Regular feature agents must not edit `weave.md` or the marked Weave block. If
-either is stale, propose a specific correction. Apply corrections only through
+Regular feature agents must not edit `weave.md` or the "Run and test" section.
+If either is stale, propose a specific correction. Apply corrections only through
 `/setup-weave` after human approval.
 
 If `weave.md` is missing, say so. Apply Lattice principles and defaults, but do
@@ -38,11 +38,12 @@ not invent repository-specific commands, permissions, or verification methods.
 
 Short Weave config only: repo type, opt-outs (always explicit when set up via
 `/setup-weave`), and Weave-only notes. Not architecture docs. Run `/setup-weave`
-to create or update it and the AGENTS.md block.
+to create or update it and the "Run and test" section.
 
-## AGENTS.md Weave block
+## "Run and test" section of AGENTS.md
 
-Between `<!-- weave:start -->` and `<!-- weave:end -->` in root `AGENTS.md`:
+Between `<!-- run-and-test:start -->` and `<!-- run-and-test:end -->` in root
+`AGENTS.md`, under the heading `## Run and test`:
 
 - **Components** — path, type, runtime, install/build, start, test environment,
   verification methods (with expected results and evidence), verification gaps.
@@ -52,7 +53,8 @@ Between `<!-- weave:start -->` and `<!-- weave:end -->` in root `AGENTS.md`:
 - **Notes** — boot, architecture, copy, framework rules, and other facts to run
   the code (not Weave opt-outs; those stay in `weave.md`).
 
-Only `/setup-weave` may replace this block. Preserve all other `AGENTS.md` content.
+Only `/setup-weave` may replace this section. Preserve all other `AGENTS.md`
+content.
 
 ## Repo types
 
@@ -60,7 +62,7 @@ Only `/setup-weave` may replace this block. Preserve all other `AGENTS.md` conte
 
 **Client existing** — adapt to their conventions for existing code. No mass
 reformat. Hold new code you write to the Lattice bar. Augment existing
-`AGENTS.md` with the marked Weave block; never overwrite unrelated content.
+`AGENTS.md` with the "Run and test" section; never overwrite unrelated content.
 
 ## Enforcement
 

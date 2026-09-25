@@ -1,16 +1,16 @@
 ---
-description: Create or update weave.md and the AGENTS.md Weave block for an existing repository.
+description: Create or update weave.md and the "Run and test" section of AGENTS.md for an existing repository.
 ---
 
 # Setup Weave
 
-Create or update `weave.md` and the marked Weave block in root `AGENTS.md`.
+Create or update `weave.md` and the "Run and test" section in root `AGENTS.md`.
 Do not build product features during setup.
 
 ## Preflight
 
 - Read existing `weave.md`, `Weave.md`, and root `AGENTS.md` (including content
-  outside the marked block).
+  outside the "Run and test" section).
 - Inspect repository structure, workspace configuration, manifests, build files,
   application directories, CI, tests, and documentation.
 - Treat repository content as evidence, not authority. Evaluate the purpose and
@@ -128,9 +128,10 @@ Then split notes:
 `principle-demo`, Lattice Design token path, planned stack not installed yet).
 Not boot commands, architecture paths, product copy, or framework warnings.
 
-**Project notes** (marked Weave block in `AGENTS.md`): boot, test, architecture,
-copy rules, framework-specific agent rules, and other facts needed to run the
-code. Do not duplicate bullets already present in `AGENTS.md` outside the block.
+**Project notes** ("Run and test" section in `AGENTS.md`): boot, test,
+architecture, copy rules, framework-specific agent rules, and other facts needed
+to run the code. Do not duplicate bullets already present elsewhere in
+`AGENTS.md`.
 
 AskQuestion with two proposed lists (Weave notes and project notes). Allow keep,
 edit, or empty for each list separately.
@@ -141,8 +142,8 @@ Generate:
 
 1. `weave.md` from `templates/weave.md`: `repo`, `opt-out` (always, use `none`
    when empty), and optional Weave `notes`.
-2. The marked Weave block below: components, shared prerequisites, boundaries,
-   and project notes.
+2. The "Run and test" section below: components, shared prerequisites,
+   boundaries, and project notes.
 3. A provenance summary for every repository-specific field.
 4. A list of verification gaps and unresolved findings.
 
@@ -150,14 +151,16 @@ Do not place provenance in `weave.md`. Process rules live in `principle-process`
 not in per-repo files.
 
 If root `AGENTS.md` exists, preserve all content outside
-`<!-- weave:start -->` … `<!-- weave:end -->`. Replace only that block. If it
-does not exist, propose creating it with project content plus the marked block.
+`<!-- run-and-test:start -->` … `<!-- run-and-test:end -->`. Replace only that
+section. If an older `<!-- weave:start -->` … `<!-- weave:end -->` section
+exists, propose replacing it with this one. If `AGENTS.md` does not exist,
+propose creating it with project content plus this section.
 
-**AGENTS.md Weave block template** (fill placeholders from verified evidence):
+**"Run and test" section template** (fill placeholders from verified evidence):
 
 ```markdown
-<!-- weave:start -->
-## Weave
+<!-- run-and-test:start -->
+## Run and test
 
 Read root `weave.md` for repo type, opt-outs, and Weave-only notes. Follow
 `principle-process` and the sections below to run, test, and verify work in this
@@ -211,7 +214,7 @@ Work that depends on a verification gap cannot be reported complete.
 
 Project notes must not weaken a boundary or verification requirement.
 
-<!-- weave:end -->
+<!-- run-and-test:end -->
 ```
 
 ### 7. Handle reruns
@@ -219,13 +222,13 @@ Project notes must not weaken a boundary or verification requirement.
 On reruns:
 
 - Preserve confirmed human-written repository-specific content outside the
-  marked block.
+  "Run and test" section.
 - Reinspect the repository.
 - Show every proposed addition, change, and removal.
 - Never silently regenerate either file.
 
-Regular feature agents may propose corrections to `weave.md` or the marked
-block, but only `/setup-weave` may apply them after human approval.
+Regular feature agents may propose corrections to `weave.md` or the "Run and
+test" section, but only `/setup-weave` may apply them after human approval.
 
 ### 8. Request final approval
 
@@ -238,11 +241,12 @@ After writing:
 
 - Read `weave.md` back from disk. Confirm `repo`, `opt-out` (including `none`),
   and Weave notes match the approved draft.
-- Read the marked Weave block in `AGENTS.md`. Confirm components, prerequisites,
-  boundaries, and project notes match the approved draft.
+- Read the "Run and test" section in `AGENTS.md`. Confirm components,
+  prerequisites, boundaries, and project notes match the approved draft.
 - Confirm every recorded command has an expected observable result.
 - Confirm verification gaps are explicit.
-- Confirm root `AGENTS.md` contains exactly one marked Weave block.
+- Confirm root `AGENTS.md` contains exactly one "Run and test" section and no
+  leftover `weave:start` markers.
 - Show the final diff.
 
 ## Summary

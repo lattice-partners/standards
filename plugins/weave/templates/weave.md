@@ -13,7 +13,7 @@ Missing file means full Lattice defaults with no recorded opt-outs.
   one-line reason. Allowed keys: `supabase`, `clerk`, `vercel`, `lattice-design`
 - **notes** — optional short list of facts about how Weave applies here. Not boot
   commands, architecture, product copy, or framework version warnings. Those
-  belong in the marked Weave block in root `AGENTS.md`.
+  belong in the "Run and test" section of root `AGENTS.md`.
 
 You cannot opt out of testing, security, front-end UX, code quality, performance,
 or this process skill.
