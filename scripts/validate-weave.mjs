@@ -23,15 +23,14 @@ const EXPECTED_COMMANDS = [
   'utility-weave-improvements',
 ]
 const COMMAND_SECTIONS = ['Preflight', 'Plan', 'Commands', 'Verification', 'Summary']
-const TEMPLATE_SECTIONS = [
+const WEAVE_TEMPLATE_SECTIONS = ['Fields']
+const SETUP_WEAVE_AGENTS_BLOCK_SECTIONS = [
   'Components',
   'Shared prerequisites',
   'Boundaries',
   'Notes',
-  'Task protocol',
-  'Risk',
-  'Definition of done',
 ]
+const PROCESS_SKILL_SECTIONS = ['Task protocol', 'Risk', 'Definition of done']
 
 function readJson(path) {
   return JSON.parse(fs.readFileSync(path, 'utf8'))
@@ -122,8 +121,35 @@ export function validateWeave() {
     fail('missing templates/weave.md')
   } else {
     const template = read(join(PLUGIN_ROOT, 'templates/weave.md'))
-    for (const section of TEMPLATE_SECTIONS) {
+    for (const section of WEAVE_TEMPLATE_SECTIONS) {
       if (!heading(template, section)) fail(`weave.md template missing ## ${section}`)
+    }
+    if (!template.includes('opt-out: none')) {
+      fail('weave.md template must document opt-out: none')
+    }
+  }
+
+  const setupWeavePath = join(PLUGIN_ROOT, 'commands/setup-weave.md')
+  const setupWeave = read(setupWeavePath)
+  if (
+    !setupWeave.includes('<!-- weave:start -->') ||
+    !setupWeave.includes('<!-- weave:end -->')
+  ) {
+    fail('setup-weave.md must embed the AGENTS.md Weave block template')
+  }
+  for (const section of SETUP_WEAVE_AGENTS_BLOCK_SECTIONS) {
+    if (!new RegExp(`^### ${section}\\s*$`, 'm').test(setupWeave)) {
+      fail(`setup-weave.md Weave block template missing ### ${section}`)
+    }
+  }
+
+  const processSkillPath = join(PLUGIN_ROOT, 'skills/principle-process/SKILL.md')
+  if (fs.existsSync(processSkillPath)) {
+    const processSkill = read(processSkillPath)
+    for (const section of PROCESS_SKILL_SECTIONS) {
+      if (!heading(processSkill, section)) {
+        fail(`principle-process missing ## ${section}`)
+      }
     }
   }
 

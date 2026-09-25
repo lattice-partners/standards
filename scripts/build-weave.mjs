@@ -10,6 +10,7 @@ const SKILLS_DIR = join(ROOT, 'plugins/weave/skills')
 
 export const EXPECTED_PRINCIPLES = [
   'principle-weave',
+  'principle-process',
   'principle-suggested-stack',
   'principle-testing',
   'principle-frontend-ux',
