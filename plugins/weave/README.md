@@ -1,19 +1,18 @@
 # Weave plugin
 
-Cursor plugin source. `/setup-weave` creates a repository-specific trust
-contract for repeatable agent verification. Martin's existing principle and
-task skills remain available alongside the new setup workflow.
+Cursor plugin source. `/setup-weave` writes `weave.md` (repo type, opt-outs,
+Weave notes) and the "Run and test" section of root `AGENTS.md` (components,
+verification, project notes).
 
 ## Contents
 
-- **Principles** - principle-weave, principle-suggested-stack, principle-testing,
-  principle-frontend-ux, principle-code-quality, principle-security,
-  principle-performance, principle-demo
+- **Principles** - principle-weave, principle-process, principle-suggested-stack,
+  principle-testing, principle-frontend-ux, principle-code-quality,
+  principle-security, principle-performance, principle-demo
 - **Lattice Skills** - lattice-design, lattice-stack
 - **Utility Skills** - utility-ui-options-toggle
 - **Commands** - setup-weave, review-weave, utility-weave-improvements
-- **Template** - component verification, boundaries, notes, risk, and definition
-  of done
+- **Template** - `templates/weave.md` ("Run and test" scaffold lives in the `setup-weave` command)
 
 ## Local install
 
@@ -22,7 +21,7 @@ mkdir -p ~/.cursor/plugins/local
 ln -sfn "$(pwd)/plugins/weave" ~/.cursor/plugins/local/weave
 ```
 
-Reload Cursor. Tag `#v2.0.0` on the standards repo for marketplace refresh.
+Reload Cursor. Tag `#v2.1.0` on the standards repo for marketplace refresh.
 
 ## Edit and verify
 

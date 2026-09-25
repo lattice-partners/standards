@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.1.0
+
+Split per-repo config: `weave.md` holds repo type, `opt-out` (always set;
+`none` when all defaults stay on), and Weave-only notes. Components,
+verification, prerequisites, boundaries, and project notes live in a
+"Run and test" section of root `AGENTS.md` (`<!-- run-and-test:start -->`
+markers; scaffold in `/setup-weave`, shape in `principle-weave`). Setup replaces
+an older `weave:start` section when it finds one. Task protocol, risk, and
+definition of done move to always-on `principle-process`.
+`/setup-weave` interviews for repo type and each opt-out again and writes both
+files.
+
 ## 2.0.1
 
 `principle-frontend-ux` and `lattice-design`: wizard modals use header Back and Close, footer Cancel plus one primary, and progressive disclosure.
