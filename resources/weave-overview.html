@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>How Weave works</title>
+<style>
+  :root {
+    --bg-canvas: #f7f7f8;
+    --bg-elevated: #ffffff;
+    --bg-secondary: #f0f0f2;
+    --bg-tertiary: #e6e6ea;
+    --text-primary: #18181b;
+    --text-secondary: #52525b;
+    --text-tertiary: #8a8a93;
+    --border: #e4e4e7;
+    --border-strong: #d4d4d8;
+    --accent: #4f46e5;
+    --accent-tint: #eef2ff;
+    --principle: #0f766e;
+    --principle-tint: #e6f6f4;
+    --task: #7c3aed;
+    --task-tint: #f3edff;
+    --command: #b45309;
+    --command-tint: #fdf3e4;
+    --contract: #1d4ed8;
+    --contract-tint: #e8effd;
+    --human: #be123c;
+    --human-tint: #fdecef;
+    --success: #15803d;
+    --success-tint: #e8f6ec;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-canvas: #111113;
+      --bg-elevated: #19191c;
+      --bg-secondary: #222226;
+      --bg-tertiary: #2c2c31;
+      --text-primary: #ededef;
+      --text-secondary: #a1a1aa;
+      --text-tertiary: #71717a;
+      --border: #2a2a2f;
+      --border-strong: #3a3a40;
+      --accent: #818cf8;
+      --accent-tint: #1f1f3a;
+      --principle: #2dd4bf;
+      --principle-tint: #102a28;
+      --task: #a78bfa;
+      --task-tint: #221a38;
+      --command: #fbbf24;
+      --command-tint: #2e2410;
+      --contract: #60a5fa;
+      --contract-tint: #13213a;
+      --human: #fb7185;
+      --human-tint: #36161d;
+      --success: #4ade80;
+      --success-tint: #12291a;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    margin: 0;
+    background: var(--bg-canvas);
+    color: var(--text-primary);
+    font: 14px/1.55 var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  code, pre, .chip { font-family: var(--mono); font-size: 12.5px; font-variant-ligatures: none; }
+  .flow .node code, .cycle code { overflow-wrap: anywhere; }
+  code { background: var(--bg-secondary); padding: 1px 5px; border-radius: 4px; }
+  pre {
+    margin: 0;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    line-height: 1.5;
+    white-space: pre;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 100vh; }
+  nav.toc {
+    position: sticky; top: 0; align-self: start; height: 100vh;
+    border-right: 1px solid var(--border);
+    padding: 20px 12px; overflow-y: auto;
+  }
+  .toc .brand { font-weight: 600; padding: 0 8px 4px; }
+  .toc .version { font-size: 12px; color: var(--text-tertiary); padding: 0 8px 16px; }
+  .toc a {
+    display: block; padding: 5px 8px; border-radius: 6px;
+    color: var(--text-secondary); transition: background-color 150ms, color 150ms;
+  }
+  .toc a:hover { background: var(--bg-secondary); color: var(--text-primary); text-decoration: none; }
+  .toc .group { font-size: 12px; font-weight: 500; color: var(--text-tertiary); padding: 14px 8px 4px; }
+
+  main { padding: 32px 40px 80px; max-width: 1200px; }
+  header.hero h1 { font-size: 24px; font-weight: 600; margin: 0 0 6px; }
+  header.hero p { color: var(--text-secondary); margin: 0; max-width: 760px; }
+
+  section { margin-top: 48px; scroll-margin-top: 16px; }
+  section > h2 { font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+  section > .lede { color: var(--text-secondary); margin: 0 0 16px; max-width: 800px; }
+  h3 { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
+  .muted { color: var(--text-secondary); }
+  .small { font-size: 12px; }
+
+  .frame {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .grid { display: grid; gap: 16px; }
+  .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+  /* Legend and chips */
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 12px 0 0; font-size: 12px; color: var(--text-secondary); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    font: 500 12px/1 var(--mono);
+    padding: 4px 7px; border-radius: 5px; white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .c-principle { background: var(--principle-tint); color: var(--principle); }
+  .c-task { background: var(--task-tint); color: var(--task); }
+  .c-command { background: var(--command-tint); color: var(--command); }
+  .c-contract { background: var(--contract-tint); color: var(--contract); }
+  .c-human { background: var(--human-tint); color: var(--human); }
+  .c-success { background: var(--success-tint); color: var(--success); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* Big picture flow */
+  .flow { display: flex; align-items: stretch; gap: 0; }
+  .flow .node {
+    flex: 1 1 0; min-width: 0;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .flow .node .kicker { font-size: 12px; font-weight: 500; color: var(--text-tertiary); }
+  .flow .node .title { font-weight: 600; }
+  .flow .node ul { margin: 0; padding-left: 18px; color: var(--text-secondary); }
+  .flow .arrow {
+    flex: 0 0 44px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--text-tertiary); font-size: 11px; text-align: center; gap: 2px;
+  }
+  .flow .arrow svg { width: 32px; height: 14px; }
+  .loopback {
+    margin-top: 10px; border: 1px dashed var(--border-strong); border-radius: 10px;
+    padding: 10px 14px; color: var(--text-secondary); font-size: 13px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .loopback svg { flex: 0 0 auto; width: 18px; height: 18px; color: var(--text-tertiary); }
+
+  /* Plugin contents */
+  .card {
+    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .card .head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .card .count { font-size: 12px; color: var(--text-tertiary); }
+  .item { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; align-items: baseline; }
+  .item .desc { color: var(--text-secondary); font-size: 13px; }
+  .list { display: flex; flex-direction: column; gap: 10px; }
+  .bar { height: 3px; border-radius: 2px; }
+
+  /* Two layers table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; font-size: 12px; font-weight: 500; color: var(--text-secondary);
+    padding: 8px 12px; border-bottom: 1px solid var(--border);
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  .frame.p0 { padding: 0; overflow-x: auto; }
+
+  /* Steps */
+  .steps { display: flex; flex-direction: column; gap: 0; position: relative; }
+  .step { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 14px; position: relative; padding-bottom: 18px; }
+  .step:last-child { padding-bottom: 0; }
+  .step::before {
+    content: ""; position: absolute; left: 17px; top: 30px; bottom: 0; width: 2px; background: var(--border);
+  }
+  .step:last-child::before { display: none; }
+  .num {
+    width: 36px; height: 36px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    font: 600 13px/1 var(--sans); background: var(--bg-secondary); color: var(--text-secondary);
+    border: 1px solid var(--border-strong); position: relative; z-index: 1;
+  }
+  .step.gate .num { background: var(--human-tint); color: var(--human); border-color: transparent; }
+  .step.done .num { background: var(--success-tint); color: var(--success); border-color: transparent; }
+  .step .body { padding-top: 6px; }
+  .step .body p { margin: 0 0 8px; color: var(--text-secondary); }
+  .step .body ul { margin: 0 0 8px; padding-left: 18px; color: var(--text-secondary); }
+  .gate-tag { margin-left: 6px; vertical-align: 1px; }
+
+  /* Prompt bubble */
+  .prompt {
+    background: var(--accent-tint); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; font-size: 14px;
+  }
+  .prompt .who { font-size: 12px; font-weight: 500; color: var(--text-tertiary); margin-bottom: 4px; }
+
+  /* Matrix */
+  .matrix th.rot {
+    font-family: var(--mono); font-size: 11px; padding: 10px 4px; white-space: nowrap;
+    writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; vertical-align: bottom;
+  }
+  .matrix thead th:not(.rot) { vertical-align: bottom; }
+  .matrix td.dot { text-align: center; padding: 10px 6px; }
+  .matrix td.dot span { display: inline-block; width: 10px; height: 10px; border-radius: 999px; }
+  .d-principle { background: var(--principle); }
+  .d-task { background: var(--task); }
+  .d-command { background: var(--command); }
+  .d-ring { border: 1.5px solid var(--text-tertiary); }
+  .matrix td.p { min-width: 220px; }
+  .cycle .chip { white-space: normal; overflow-wrap: anywhere; line-height: 1.3; }
+  .matrix td.risk { white-space: nowrap; }
+
+  /* Risk */
+  .risk-card { border-top: 3px solid var(--border-strong); }
+  .risk-card.low { border-top-color: var(--success); }
+  .risk-card.med { border-top-color: var(--command); }
+  .risk-card.high { border-top-color: var(--human); }
+  .risk-card p { margin: 0; color: var(--text-secondary); }
+  .risk-card .approve { font-size: 12px; font-weight: 500; }
+
+  /* Loop */
+  .cycle { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+  .cycle .c {
+    background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px; padding: 12px;
+    display: flex; flex-direction: column; gap: 6px; position: relative;
+  }
+  .cycle .c .n { font-size: 12px; color: var(--text-tertiary); font-weight: 500; }
+  .cycle .c p { margin: 0; color: var(--text-secondary); font-size: 13px; }
+
+  .callout {
+    border-left: 3px solid var(--accent); background: var(--bg-elevated);
+    border-radius: 0 8px 8px 0; padding: 10px 14px; color: var(--text-secondary);
+    border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+  .callout strong { color: var(--text-primary); }
+
+  @media (max-width: 1000px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+    main { padding: 24px 16px 64px; }
+    .g3, .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .cycle { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .flow { flex-direction: column; }
+    .flow .arrow { flex-basis: 36px; flex-direction: row; }
+    .flow .arrow svg { transform: rotate(90deg); }
+  }
+  @media (max-width: 640px) {
+    .g2, .g3, .g4, .cycle { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="toc" aria-label="Sections">
+    <div class="brand">How Weave works</div>
+    <div class="version">Plugin version 2.0.1</div>
+    <a href="#overview">Overview</a>
+    <a href="#contents">What is in the plugin</a>
+    <a href="#layers">Lattice rules vs project rules</a>
+    <div class="group">Workflows</div>
+    <a href="#setup">Setup: /setup-weave</a>
+    <a href="#task">A task, start to finish</a>
+    <a href="#matrix">Which skills each prompt uses</a>
+    <a href="#risk">Risk levels</a>
+    <a href="#review">Review: /review-weave</a>
+    <a href="#improve">Improving the standard</a>
+    <div class="group">Reference</div>
+    <a href="#rules">Quick rules</a>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <h1>How Weave works</h1>
+      <p>Weave is a Cursor plugin made of Markdown files: skills, slash commands, and a template.
+        Once installed, Cursor loads it into every agent chat. Each project adds one file,
+        <code>weave.md</code>, that records how that specific repository is built, tested, and verified,
+        and what agents must not do without approval.</p>
+      <div class="legend" aria-label="Color legend">
+        <span><i class="sw" style="background:var(--principle)"></i>Principle skill (always loaded)</span>
+        <span><i class="sw" style="background:var(--task)"></i>Task skill (used when the work matches)</span>
+        <span><i class="sw" style="background:var(--command)"></i>Slash command (run by a person)</span>
+        <span><i class="sw" style="background:var(--contract)"></i>Project file</span>
+        <span><i class="sw" style="background:var(--human)"></i>Human approval required</span>
+      </div>
+    </header>
+
+    <!-- Overview -->
+    <section id="overview">
+      <h2>Overview</h2>
+      <p class="lede">The plugin source lives in this repository. Cursor installs it once per machine or team.
+        Every project that uses it gets its own <code>weave.md</code>. Agents read both on every task.</p>
+
+      <div class="flow">
+        <div class="node">
+          <div class="kicker">1. Source</div>
+          <div class="title">lattice-standards repo</div>
+          <ul>
+            <li><code>plugins/weave/skills/</code></li>
+            <li><code>plugins/weave/commands/</code></li>
+            <li><code>plugins/weave/templates/weave.md</code></li>
+          </ul>
+          <div class="small muted">The Weave team edits these files.</div>
+        </div>
+        <div class="arrow" aria-hidden="true">
+          <svg viewBox="0 0 32 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 7h28M23 1l6 6-6 6"/></svg>
+          install
+        </div>
+        <div class="node">
+          <div class="kicker">2. Install</div>
+          <div class="title">Cursor</div>
+          <ul>
+            <li>Local: symlink into <code>~/.cursor/plugins/local/weave</code></li>
+            <li>Team: marketplace import of <code>plugins/weave</code></li>
+          </ul>
+          <div class="small muted">Loaded into every chat, in every repo.</div>
+        </div>
+        <div class="arrow" aria-hidden="true">
+          <svg viewBox="0 0 32 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 7h28M23 1l6 6-6 6"/></svg>
+          /setup-weave
+        </div>
+        <div class="node">
+          <div class="kicker">3. Per project</div>
+          <div class="title">Client or Lattice repo</div>
+          <ul>
+            <li><code>weave.md</code> at the repo root</li>
+            <li>Marked Weave block in <code>AGENTS.md</code></li>
+          </ul>
+          <div class="small muted">Written once, after a person approves it.</div>
+        </div>
+        <div class="arrow" aria-hidden="true">
+          <svg viewBox="0 0 32 14" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 7h28M23 1l6 6-6 6"/></svg>
+          every task
+        </div>
+        <div class="node">
+          <div class="kicker">4. Daily work</div>
+          <div class="title">Agent chat</div>
+          <ul>
+            <li>Reads <code>weave.md</code> first</li>
+            <li>Applies principles and task skills</li>
+            <li>Verifies with the recorded methods</li>
+          </ul>
+          <div class="small muted"><code>/review-weave</code> audits the result.</div>
+        </div>
+      </div>
+      <div class="loopback">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 10a6 6 0 1 0 2-4.5M4 3v3h3"/></svg>
+        <span><code>/utility-weave-improvements</code> reads recent chats and reports problems to the Weave team, who then edit step 1. See <a href="#improve">Improving the standard</a>.</span>
+      </div>
+    </section>
+
+    <!-- Contents -->
+    <section id="contents">
+      <h2>What is in the plugin</h2>
+      <p class="lede">Four kinds of files. Principles are loaded in every chat. Task skills are used when the request matches their description. Commands only run when a person types them. The template defines the shape of <code>weave.md</code>.</p>
+
+      <div class="grid g2">
+        <div class="card">
+          <div class="bar" style="background:var(--principle)"></div>
+          <div class="head"><h3>Principle skills</h3><span class="count">8, always loaded</span></div>
+          <div class="list">
+            <div class="item"><span class="chip c-principle">principle-weave</span><span class="desc">Read <code>weave.md</code> before planning. Follow its components, boundaries, risk rules, and definition of done. Never edit it directly.</span></div>
+            <div class="item"><span class="chip c-principle">principle-security</span><span class="desc">Server-side auth, no RLS bypasses, no secrets in <code>NEXT_PUBLIC_</code>, no destructive SQL without approval. Private site unless clearly public.</span></div>
+            <div class="item"><span class="chip c-principle">principle-testing</span><span class="desc">Tests ship with features. Never delete a failing test to pass. Never call work done if tests did not run.</span></div>
+            <div class="item"><span class="chip c-principle">principle-code-quality</span><span class="desc">Simple, typed, no dead code, errors handled, Conventional Commits, no em dashes or emojis.</span></div>
+            <div class="item"><span class="chip c-principle">principle-frontend-ux</span><span class="desc">Show-then-edit, read-only tables, wizard modal layout, loading/empty/error states, short copy.</span></div>
+            <div class="item"><span class="chip c-principle">principle-performance</span><span class="desc">Measure first, server rendering, no N+1 queries, index filter and RLS columns.</span></div>
+            <div class="item"><span class="chip c-principle">principle-suggested-stack</span><span class="desc">Default to Supabase, Clerk, Vercel, Railway, and Lattice Design unless the project already chose otherwise.</span></div>
+            <div class="item"><span class="chip c-principle">principle-demo</span><span class="desc">Only when a demo or mock-up is requested: no database, <code>sessionStorage</code> store, several scenarios.</span></div>
+          </div>
+        </div>
+
+        <div class="grid" style="gap:16px">
+          <div class="card">
+            <div class="bar" style="background:var(--task)"></div>
+            <div class="head"><h3>Task skills</h3><span class="count">3, used when relevant</span></div>
+            <div class="list">
+              <div class="item"><span class="chip c-task">lattice-stack</span><span class="desc">How to set up Supabase, Clerk, and Vercel: branches, RLS with Clerk claims, env vars per environment.</span></div>
+              <div class="item"><span class="chip c-task">lattice-design</span><span class="desc">Visual system on Tailwind v4: tokens, shell, typography, buttons, modals, menus, motion.</span></div>
+              <div class="item"><span class="chip c-task">utility-ui-options-toggle</span><span class="desc">Build three distinct variants of a screen so the team can compare and pick one.</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="bar" style="background:var(--command)"></div>
+            <div class="head"><h3>Slash commands</h3><span class="count">3, run by a person</span></div>
+            <div class="list">
+              <div class="item"><span class="chip c-command">/setup-weave</span><span class="desc">Interview the human and inspect the repo, then write <code>weave.md</code> and the <code>AGENTS.md</code> block.</span></div>
+              <div class="item"><span class="chip c-command">/review-weave</span><span class="desc">Read-only audit of the repo against the principles and <code>weave.md</code>. Approve or request changes.</span></div>
+              <div class="item"><span class="chip c-command">/utility-weave-improvements</span><span class="desc">Read the last 14 days of chats and print a report for the Weave team. Edits nothing.</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="bar" style="background:var(--contract)"></div>
+            <div class="head"><h3>Template</h3><span class="count"><code>templates/weave.md</code></span></div>
+            <div class="chips">
+              <span class="chip c-contract">Components</span>
+              <span class="chip c-contract">Shared prerequisites</span>
+              <span class="chip c-contract">Boundaries</span>
+              <span class="chip c-contract">Notes</span>
+              <span class="chip c-contract">Task protocol</span>
+              <span class="chip c-contract">Risk</span>
+              <span class="chip c-contract">Definition of done</span>
+            </div>
+            <div class="small muted">The first four are filled in per project. The last three are copied unchanged into every project.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Layers -->
+    <section id="layers">
+      <h2>Lattice rules vs project rules</h2>
+      <p class="lede">An agent works from two sources at once. The plugin holds rules that are the same for every Lattice project. <code>weave.md</code> holds facts that are only true for one repository.</p>
+      <div class="frame p0">
+        <table>
+          <thead>
+            <tr><th></th><th>Weave plugin</th><th>Project <code>weave.md</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="muted">Scope</td><td>Every repo on every machine where it is installed</td><td>One repository</td></tr>
+            <tr><td class="muted">Contains</td><td>Principles, task skills, commands, template</td><td>Components, verified commands, evidence, boundaries, notes, risk, definition of done</td></tr>
+            <tr><td class="muted">Who changes it</td><td>Weave team, through a PR to lattice-standards</td><td>Only <code>/setup-weave</code>, after a person approves the diff</td></tr>
+            <tr><td class="muted">Feature agents may</td><td>Follow it</td><td>Follow it and propose corrections, but not edit it</td></tr>
+            <tr><td class="muted">If missing</td><td>No Weave behavior at all</td><td>Agent says so, applies Lattice defaults, and does not invent repo commands or permissions</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Setup -->
+    <section id="setup">
+      <h2>Setup: <code>/setup-weave</code></h2>
+      <p class="lede">Run once on an existing repository (new or empty repos are not supported yet). The agent inspects the repo, asks one question at a time, and writes nothing until the final approval. Red steps wait for a person.</p>
+
+      <div class="grid g2">
+        <div class="frame">
+          <div class="steps">
+            <div class="step">
+              <div class="num">0</div>
+              <div class="body"><h3>Preflight</h3><p>Read any existing <code>weave.md</code> and <code>AGENTS.md</code>. Inspect manifests, apps, CI, tests, and docs. Stop if the repo is empty. Never copy secret values.</p></div>
+            </div>
+            <div class="step gate">
+              <div class="num">1</div>
+              <div class="body"><h3>Discover components <span class="chip c-human gate-tag">confirm</span></h3><p>Propose each app, service, or shared library with its path, type, runtime, and how it relates to the others. The person confirms or corrects the list.</p></div>
+            </div>
+            <div class="step">
+              <div class="num">2</div>
+              <div class="body"><h3>Shared prerequisites</h3><p>Package manager, runtimes, services and startup order, env var names, test accounts, seed data. Each finding is tagged as confirmed by a file, by a command, by the human, or unresolved.</p></div>
+            </div>
+            <div class="step gate">
+              <div class="num">3</div>
+              <div class="body"><h3>Inspect each component <span class="chip c-human gate-tag">ask before running</span></h3><p>Find install, start, test environment, and verification methods. A method counts as verified only if it runs and produces its expected visible result. Missing methods are recorded as gaps.</p></div>
+            </div>
+            <div class="step gate">
+              <div class="num">4</div>
+              <div class="body"><h3>Boundaries and notes <span class="chip c-human gate-tag">confirm</span></h3><p>Propose rules for production data, migrations, deploys and merges, and auth changes. Then ask: "What do agents repeatedly misunderstand about this repository?"</p></div>
+            </div>
+            <div class="step">
+              <div class="num">5</div>
+              <div class="body"><h3>Draft files</h3><p>Fill the template to produce <code>weave.md</code>, the <code>AGENTS.md</code> block, a provenance summary, and a list of gaps.</p></div>
+            </div>
+            <div class="step gate">
+              <div class="num">6</div>
+              <div class="body"><h3>Final approval <span class="chip c-human gate-tag">approve</span></h3><p>Show full drafts and diffs. Write only after an explicit yes. On reruns, show every addition, change, and removal.</p></div>
+            </div>
+            <div class="step done">
+              <div class="num">7</div>
+              <div class="body"><h3>Verify and summarize</h3><p>Read the files back, check they match what was approved, and print a Result block.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid" style="gap:16px; align-content:start">
+          <div>
+            <h3>Example output: <code>weave.md</code> (excerpt)</h3>
+            <p class="small muted" style="margin:0 0 8px">Fictional repo used for illustration.</p>
+<pre>## Components
+
+### `apps/web`
+
+- Type: `application`
+- Runtime: `Node 24, Next.js 16`
+- Install or build: `npm ci && npm run build`
+- Start: `npm run dev` (port 3000)
+- Test environment: `local, staging Supabase branch`
+
+#### Verification methods
+
+##### `unit-tests`
+
+- Applies to: `logic, components`
+- Tool: `Vitest`
+- Command or procedure: `npm test`
+- Expected observable result: `"Tests  42 passed"`
+- Evidence: `test output`
+
+##### `browser-check`
+
+- Applies to: `UI changes`
+- Tool: `Playwright`
+- Command or procedure: `npm run e2e`
+- Expected observable result: `all specs pass`
+- Evidence: `screenshots, trace`
+
+#### Verification gaps
+
+- `No e2e coverage for billing pages`
+
+## Boundaries
+
+- `Never run migrations against production`
+- `Merges to main need a human`
+
+## Notes
+
+- `Clients and projects share one owner column`</pre>
+          </div>
+          <div>
+            <h3>Block added to <code>AGENTS.md</code></h3>
+<pre>&lt;!-- weave:start --&gt;
+## Weave
+
+Read `weave.md` before planning or changing this
+repository. Follow its component instructions,
+boundaries, verification process, and definition
+of done.
+&lt;!-- weave:end --&gt;</pre>
+          </div>
+          <div>
+            <h3>Result block</h3>
+<pre>## Result
+- Action: setup-weave
+- Status: complete
+- Components configured: apps/web, apps/server
+- Verification gaps: billing e2e
+- Files created or updated: weave.md, AGENTS.md
+- Commands verified: npm ci, npm test, npm run e2e
+- Remaining blockers: none</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Task -->
+    <section id="task">
+      <h2>A task, start to finish</h2>
+      <p class="lede">A walkthrough of one sample prompt in a repo that already has <code>weave.md</code>. The steps come from the Task protocol, Risk, and Definition of done sections of the template.</p>
+
+      <div class="prompt">
+        <div class="who">Sample prompt</div>
+        Save notes on each client in Supabase so people in an org only see their own org's notes. Add a Notes panel to the client detail page.
+      </div>
+
+      <div class="frame" style="margin-top:16px">
+        <div class="steps">
+          <div class="step">
+            <div class="num">1</div>
+            <div class="body">
+              <h3>Read the contract</h3>
+              <p><span class="chip c-principle">principle-weave</span> makes the agent read <code>weave.md</code>: the <code>apps/web</code> commands, the "never run migrations against production" boundary, and the note about the shared owner column.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="num">2</div>
+            <div class="body">
+              <h3>Confirm acceptance criteria</h3>
+              <p>Written as things that can be observed, without narrowing the request:</p>
+<pre>- A signed-in user sees notes for clients in their active org only.
+- A user in another org gets zero rows for the same client id.
+- Notes panel shows loading, empty, and error states.
+- Add, edit, and delete a note from the detail page.</pre>
+            </div>
+          </div>
+          <div class="step gate">
+            <div class="num">3</div>
+            <div class="body">
+              <h3>Classify risk <span class="chip c-human gate-tag">High: wait for approval</span></h3>
+              <p>New RLS policies change who can access what, so the task is High. A person must approve both the implementation plan and the verification plan before any code is written.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="num">4</div>
+            <div class="body">
+              <h3>Plan verification</h3>
+              <p>List ways the change could look correct while being wrong (for example, RLS passes locally because the query used the secret key). Derive checks from affected surfaces, invalid input, failure cases, and policy bypasses. Use only methods that <code>weave.md</code> marks as verified.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="num">5</div>
+            <div class="body">
+              <h3>Build, with the matching skills</h3>
+              <div class="chips" style="margin-bottom:8px">
+                <span class="chip c-principle">principle-suggested-stack</span>
+                <span class="chip c-task">lattice-stack</span>
+                <span class="chip c-principle">principle-security</span>
+                <span class="chip c-principle">principle-performance</span>
+                <span class="chip c-principle">principle-frontend-ux</span>
+                <span class="chip c-task">lattice-design</span>
+                <span class="chip c-principle">principle-testing</span>
+                <span class="chip c-principle">principle-code-quality</span>
+              </div>
+              <ul>
+                <li>Forward-only migration with RLS in the same file, policy on <code>auth.jwt()-&gt;'o'-&gt;&gt;'id'</code>, <code>text</code> owner column, index on it.</li>
+                <li>Server client forwards the Clerk token. No secret key on user requests.</li>
+                <li>Notes panel is read-only until Edit, with loading, empty, and error states, styled with Lattice tokens.</li>
+                <li>Unit tests plus an RLS test for the cross-org case. Regenerated types committed.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="step">
+            <div class="num">6</div>
+            <div class="body">
+              <h3>Verify and record evidence</h3>
+              <p>Every check is recorded in the same format, against the final commit:</p>
+<pre>Check:    Cross-org user cannot read notes
+Expected: 0 rows for client c_123 as org_B user
+Observed: 0 rows
+Method:   unit-tests (npm test, rls.spec.ts)
+Evidence: test output at commit 4f2a1c9
+Status:   verified</pre>
+            </div>
+          </div>
+          <div class="step done">
+            <div class="num">7</div>
+            <div class="body">
+              <h3>Definition of done</h3>
+              <p>Complete only if every criterion has direct evidence and every planned check ran without being weakened. If the billing e2e gap blocked a needed check, the status is <span class="chip c-human">blocked</span>, not <span class="chip c-success">complete</span>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Matrix -->
+    <section id="matrix">
+      <h2>Which skills each prompt uses</h2>
+      <p class="lede">All principle skills are loaded in every chat. A filled dot means the skill shapes the work for that prompt. A ring means the skill is loaded and checked but does not change much. Empty means not used.</p>
+      <div class="frame p0">
+        <table class="matrix">
+          <thead>
+            <tr>
+              <th>Sample prompt</th>
+              <th>Risk</th>
+              <th class="rot">weave</th>
+              <th class="rot">security</th>
+              <th class="rot">testing</th>
+              <th class="rot">code-quality</th>
+              <th class="rot">frontend-ux</th>
+              <th class="rot">performance</th>
+              <th class="rot">suggested-stack</th>
+              <th class="rot">demo</th>
+              <th class="rot">lattice-stack</th>
+              <th class="rot">lattice-design</th>
+              <th class="rot">ui-options</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="p">"Add a Clients page with a searchable table and an Edit modal."</td>
+              <td class="risk"><span class="chip c-success">Low</span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-ring"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"></td>
+              <td class="dot"></td>
+              <td class="dot"></td>
+              <td class="dot"><span class="d-task"></span></td>
+              <td class="dot"></td>
+            </tr>
+            <tr>
+              <td class="p">"Save client notes in Supabase so each org only sees its own."</td>
+              <td class="risk"><span class="chip c-human">High</span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"></td>
+              <td class="dot"><span class="d-task"></span></td>
+              <td class="dot"><span class="d-task"></span></td>
+              <td class="dot"></td>
+            </tr>
+            <tr>
+              <td class="p">"Make a clickable demo of the onboarding flow for Friday's pitch."</td>
+              <td class="risk"><span class="chip c-success">Low</span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-ring"></span></td>
+              <td class="dot"><span class="d-ring"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-ring"></span></td>
+              <td class="dot"></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"></td>
+              <td class="dot"><span class="d-task"></span></td>
+              <td class="dot"></td>
+            </tr>
+            <tr>
+              <td class="p">"Show me three layout options for the invoice screen."</td>
+              <td class="risk"><span class="chip c-success">Low</span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-ring"></span></td>
+              <td class="dot"><span class="d-ring"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-ring"></span></td>
+              <td class="dot"></td>
+              <td class="dot"></td>
+              <td class="dot"></td>
+              <td class="dot"><span class="d-task"></span></td>
+              <td class="dot"><span class="d-task"></span></td>
+            </tr>
+            <tr>
+              <td class="p">"Move the API to Railway with staging and production deploys."</td>
+              <td class="risk"><span class="chip c-command">Medium</span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"></td>
+              <td class="dot"><span class="d-ring"></span></td>
+              <td class="dot"><span class="d-principle"></span></td>
+              <td class="dot"></td>
+              <td class="dot"><span class="d-task"></span></td>
+              <td class="dot"></td>
+              <td class="dot"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Risk levels are examples. The agent classifies each real task with the rules in the next section and escalates one level when unsure. If the project chose other tools (for example PlanetScale instead of Supabase), <code>suggested-stack</code> and <code>lattice-stack</code> do not push Lattice defaults.</p>
+    </section>
+
+    <!-- Risk -->
+    <section id="risk">
+      <h2>Risk levels</h2>
+      <p class="lede">Copied unchanged into every <code>weave.md</code>. When more than one level applies, the highest wins.</p>
+      <div class="grid g3">
+        <div class="card risk-card low">
+          <h3>Low</h3>
+          <p>Isolated, reversible, follows an established verification pattern, and does not touch protected behavior.</p>
+          <div class="approve" style="color:var(--success)">Agent approves its own plans.</div>
+        </div>
+        <div class="card risk-card med">
+          <h3>Medium</h3>
+          <p>May affect unrelated behavior, is hard to reverse, or has no established way to verify it.</p>
+          <div class="approve" style="color:var(--command)">Human approves the verification plan.</div>
+        </div>
+        <div class="card risk-card high">
+          <h3>High</h3>
+          <p>Changes who can access what, handles secrets differently, touches production data, moves money, sends external messages automatically, or cannot be rolled back.</p>
+          <div class="approve" style="color:var(--human)">Human approves implementation and verification plans.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Review -->
+    <section id="review">
+      <h2>Review: <code>/review-weave</code></h2>
+      <p class="lede">A manual, read-only audit. Run it on a branch before merging, or on a repo to see how far it is from the standard. It reports and does not fix unless asked.</p>
+      <div class="grid g2">
+        <div class="frame">
+          <div class="steps">
+            <div class="step">
+              <div class="num">1</div>
+              <div class="body"><h3>Read <code>weave.md</code></h3><p>If it is missing, review against full Lattice defaults and say so in the report.</p></div>
+            </div>
+            <div class="step">
+              <div class="num">2</div>
+              <div class="body"><h3>Check the principles</h3>
+                <div class="chips" style="margin-bottom:8px">
+                  <span class="chip c-principle">testing</span>
+                  <span class="chip c-principle">security</span>
+                  <span class="chip c-principle">frontend-ux</span>
+                  <span class="chip c-principle">code-quality</span>
+                  <span class="chip c-principle">performance</span>
+                  <span class="chip c-principle">demo</span>
+                </div>
+                <p><code>demo</code> is only checked when the change is a mock-up.</p></div>
+            </div>
+            <div class="step">
+              <div class="num">3</div>
+              <div class="body"><h3>Skip what the project did not choose</h3><p>No failures for missing Supabase or Lattice Design when the project uses something else.</p></div>
+            </div>
+            <div class="step">
+              <div class="num">4</div>
+              <div class="body"><h3>Grade findings</h3><p>Each finding cites a path or principle and is tagged <span class="chip c-human">blocker</span> <span class="chip c-command">should-fix</span> or <span class="chip c-contract">nit</span>.</p></div>
+            </div>
+            <div class="step done">
+              <div class="num">5</div>
+              <div class="body"><h3>Verdict</h3><p>Approve or request changes.</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="grid" style="gap:16px; align-content:start">
+          <div class="prompt">
+            <div class="who">Sample prompt</div>
+            /review-weave on this branch before I open the PR.
+          </div>
+          <div>
+            <h3>Sample report</h3>
+<pre>Findings
+- blocker   supabase/migrations/0012_notes.sql
+            Policy uses `using (true)`. principle-security.
+- should-fix apps/web/app/clients/[id]/notes.tsx
+            No error state for failed fetch. principle-frontend-ux.
+- nit       apps/web/lib/notes.ts
+            `getData` should say what it returns. principle-code-quality.
+
+## Result
+- Action: review-weave
+- Status: request-changes
+- Blockers: 1 (open RLS policy on notes)
+- Inspected: weave.md, migrations, apps/web/app/clients</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Improve -->
+    <section id="improve">
+      <h2>Improving the standard</h2>
+      <p class="lede">How problems seen in real chats become changes that every project receives.</p>
+      <div class="cycle">
+        <div class="c">
+          <span class="n">1</span>
+          <span class="chip c-command" style="align-self:start">/utility-weave-improvements</span>
+          <p>Reads the last 14 days of chat transcripts on this machine. Read-only.</p>
+        </div>
+        <div class="c">
+          <span class="n">2</span>
+          <h3>Report</h3>
+          <p>Findings sorted into security, frustration, configuration, inconsistency, and recommendation, each rated strong or medium.</p>
+        </div>
+        <div class="c">
+          <span class="n">3</span>
+          <h3>Edit the plugin</h3>
+          <p>Weave team edits the skill, command, or template in <code>plugins/weave/</code>.</p>
+        </div>
+        <div class="c">
+          <span class="n">4</span>
+          <h3>Version</h3>
+          <p>Bump <code>VERSION</code> and <code>plugin.json</code>, add a <code>CHANGELOG.md</code> entry.</p>
+        </div>
+        <div class="c">
+          <span class="n">5</span>
+          <h3>Check</h3>
+          <p><code>npm test</code> validates manifests, versions, frontmatter, and sections. <code>npm run lint:md</code> checks Markdown. CI runs both.</p>
+        </div>
+        <div class="c">
+          <span class="n">6</span>
+          <h3>Ship</h3>
+          <p>Merge to <code>main</code>. Team marketplace refreshes, or local users restart Cursor.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Rules -->
+    <section id="rules">
+      <h2>Quick rules</h2>
+      <div class="grid g2">
+        <div class="callout"><strong>Only <code>/setup-weave</code> writes <code>weave.md</code>.</strong> Feature agents propose corrections. A person approves the diff.</div>
+        <div class="callout"><strong>Verified means it ran.</strong> A command counts only when it exits successfully and shows its expected result. A zero exit code alone is not enough.</div>
+        <div class="callout"><strong>Gaps block completion.</strong> Work that depends on a missing verification method is reported as blocked, never complete.</div>
+        <div class="callout"><strong>Notes cannot loosen rules.</strong> Notes add context. They never weaken a boundary or verification requirement.</div>
+        <div class="callout"><strong>No weave.md, no invented rules.</strong> The agent applies Lattice defaults and says the file is missing.</div>
+        <div class="callout"><strong>Install one copy.</strong> If both the marketplace and local copies are installed, the marketplace copy is used and local edits are ignored.</div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>
