@@ -86,6 +86,16 @@ Tailwind CSS v4, installed the way the [Next.js guide](https://tailwindcss.com/d
   which removes the browser's `dialog { margin: auto }`, so set `m-auto` and a
   max width. Close control is an X (`XMarkIcon`) in the top corner,
   `bg-transparent`, labeled Close. Cancel stays with the footer actions.
+- **Wizard modals (UI role):** multi-step dialogs use a **top bar** for
+  navigation and keep the **footer** for commitment only. Header: **Back**
+  (previous step; hide on step one) + **Close** (exit the whole flow; same
+  confirm rules as a simple modal). Footer: **Cancel** + one **primary** — never
+  Back beside Save. Step logic and progressive disclosure:
+  `principle-frontend-ux`.
+- Back and Close in the header: icon or compact text, `bg-transparent`,
+  `rounded-md`, hover/focus on the tertiary hover surface, pointer — touch-sized
+  targets that read as controls, not primary CTAs. Back uses
+  `ChevronLeftIcon` or equivalent; Close stays `XMarkIcon`, labeled Close.
 - Shared input class: border, elevated fill, accent focus ring; selects styled
   consistently. Hide the native select caret (`appearance-none`) and draw one
   about 12px in from the right edge, with extra padding so the value does not

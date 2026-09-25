@@ -39,6 +39,29 @@ enabled.
   edit on detail when that fits the workflow. Navigable lists: whole-row or
   clear primary link, not tiny hit targets only.
 
+## Wizard modals (multi-step dialogs)
+
+- **Separate leave from undo step.** Close ends the modal and drops progress
+  (confirm when the product usually would). Back rewinds one step inside the
+  same dialog. Do not put Back in the footer next to Save — users mix up undo
+  with commit or discard everything.
+- **Progressive disclosure in the flow.** First step: the smallest decision
+  (type, intent, template). Later steps: the full form. Reduces noise and wrong
+  submissions.
+- **Action hierarchy.** Top chrome = navigation (Back, Close). Bottom chrome =
+  commitment (Cancel, submit). Same pattern as mobile sheets and most design
+  systems; footers stay predictable.
+- **Always expose exit.** A visible close control in the header complements
+  backdrop click and Escape; do not hide the only way out in the footer.
+- **One primary per step.** After step one, footer is typically Cancel + one
+  primary (Save / Continue). Step one can be Cancel only when choosing an
+  option advances the flow.
+
+Portable one-liner: wizard modals — first step = lightweight choice, later
+steps = full form; header = Back (step) + Close (dismiss); footer = Cancel +
+single primary; icon header controls get rounded hover/focus backgrounds
+(`lattice-design` when enabled).
+
 ## Lists and filters
 
 - **Active-first.** Default to live/open/current work; archived, closed, or

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1
+
+`principle-frontend-ux` and `lattice-design`: wizard modals use header Back and Close, footer Cancel plus one primary, and progressive disclosure.
+
 ## 2.0.0
 
 Redesign `/setup-weave` around repository-specific trust. It now discovers and
