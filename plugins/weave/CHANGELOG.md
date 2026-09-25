@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.0
+
+Redesign `/setup-weave` around repository-specific trust. It now discovers and
+confirms monorepo components, verifies runtime and testing methods, records
+evidence requirements, boundaries, notes, risk rules, and a strict definition
+of done. Setup also maintains a marked root `AGENTS.md` pointer. Existing task
+and principle skills remain available.
+
 ## 1.1.18
 
 `lattice-design`: hover is only for a control that will respond. Disabled and
@@ -40,7 +48,7 @@ not cover the panel.
 
 ## 1.1.11
 
-`principle-frontend-ux`: interactivity rules — pointer on controls, hover on
+`principle-frontend-ux`: interactivity rules: pointer on controls, hover on
 unexpected click targets, color or underline on text links.
 
 ## 1.1.10

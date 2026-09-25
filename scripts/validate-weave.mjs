@@ -23,6 +23,15 @@ const EXPECTED_COMMANDS = [
   'utility-weave-improvements',
 ]
 const COMMAND_SECTIONS = ['Preflight', 'Plan', 'Commands', 'Verification', 'Summary']
+const TEMPLATE_SECTIONS = [
+  'Components',
+  'Shared prerequisites',
+  'Boundaries',
+  'Notes',
+  'Task protocol',
+  'Risk',
+  'Definition of done',
+]
 
 function readJson(path) {
   return JSON.parse(fs.readFileSync(path, 'utf8'))
@@ -111,6 +120,11 @@ export function validateWeave() {
 
   if (!fs.existsSync(join(PLUGIN_ROOT, 'templates/weave.md'))) {
     fail('missing templates/weave.md')
+  } else {
+    const template = read(join(PLUGIN_ROOT, 'templates/weave.md'))
+    for (const section of TEMPLATE_SECTIONS) {
+      if (!heading(template, section)) fail(`weave.md template missing ## ${section}`)
+    }
   }
 
   const skills = listDirs(join(PLUGIN_ROOT, 'skills'))

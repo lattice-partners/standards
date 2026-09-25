@@ -1,8 +1,8 @@
 {
   "name": "@lattice/weave",
-  "version": "1.1.18",
+  "version": "2.0.0",
   "private": true,
-  "description": "Weave — Lattice engineering standards as a Cursor plugin.",
+  "description": "Weave: trusted agent work through repository-specific verification contracts.",
   "type": "module",
   "engines": {
     "node": ">=24"

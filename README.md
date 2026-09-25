@@ -1,7 +1,8 @@
 # Weave
 
-Lattice engineering standards as a Cursor plugin. Install Weave, run
-`/setup-weave` on a project, edit rules and skills here when policy changes.
+Weave helps agents earn trust through repeatable, evidence-based verification.
+Install the Cursor plugin and run `/setup-weave` on an existing repository to
+create its confirmed `weave.md` trust contract.
 
 No npm install into client repos. No CLI. No vendored `.lattice/` folder.
 
@@ -39,23 +40,23 @@ Until then, iterate locally only. A marketplace install of the same name
 
 | Piece | Purpose |
 | --- | --- |
-| **Principles** | Always used: Weave explainer, suggested stack, testing, UX, quality, security, performance, demo (mock-ups only) |
-| **Lattice** | Preferences and recommendations; opt out in `weave.md`: stack setup, Lattice Design |
-| **Utility** | Use whenever the task fits: UI options toggle |
-| **Commands** | `/setup-weave` (write `weave.md`), `/review-weave` (manual audit), `/utility-weave-improvements` (manual chat report for the Weave team) |
-| **`weave.md`** | Per-project opt-outs (created in each repo, not in this repo) |
+| **Principles** | Always used: trust contract, suggested stack, testing, UX, quality, security, performance, and demo guidance |
+| **Lattice** | Existing stack setup and Lattice Design skills |
+| **Utility** | Focused tasks such as the UI options toggle |
+| **Commands** | `/setup-weave` creates the trust contract; review and improvement commands remain available |
+| **`weave.md`** | Components, verified methods, evidence, boundaries, notes, risk, and definition of done |
 
 ## Per-project setup
 
 On a client or Lattice repo:
 
 1. Install Weave in Cursor.
-2. Run `/setup-weave`. It asks for every `weave.md` field, then writes the
-   file (repo type, opt-outs, notes).
-3. Run `/review-weave` before shipping to check alignment.
+2. Run `/setup-weave` on an existing repository.
+3. Confirm the component inventory, verified commands, boundaries, and notes.
+4. Review the proposed `weave.md` and root `AGENTS.md` block before writing.
 
-No `weave.md` means full Lattice defaults. Testing, security, and UX rules
-cannot be opted out. Supabase, Clerk, Vercel, and Lattice Design can be.
+New-project setup is intentionally out of scope for this release. Existing
+skills remain available while the trust-contract workflow is piloted.
 
 ## Change the plugin
 
@@ -67,7 +68,7 @@ See [AGENTS.md](AGENTS.md) for agent instructions on this repo.
 
 ## Why we test
 
-The plugin is just files and JSON manifests — no app to run. `npm test` checks
+The plugin is just files and JSON manifests, with no app to run. `npm test` checks
 that those files are complete and consistent so Weave actually loads in Cursor:
 versions match, manifests are valid, every rule/skill/command is present, and
 frontmatter is correct. CI runs the same check on every PR.

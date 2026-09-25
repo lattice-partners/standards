@@ -1,48 +1,31 @@
 ---
 name: principle-weave
-description: What Weave is, how to read weave.md, and what can be opted out on this project.
+description: Read and follow the repository's confirmed weave.md trust contract.
 alwaysApply: true
 ---
 
 # Weave
 
-Weave is Lattice's engineering standard in Cursor. Principle skills, task skills,
-and commands live in the Weave plugin. There is no CLI and no vendored `.lattice/`
-copy.
+`weave.md` is the repository's confirmed trust contract for agent work.
 
-## On every project
+Before planning or changing a repository:
 
-1. Read `weave.md` at the repo root if it exists. No file means full Lattice
-   defaults.
-2. Apply all always-on principles (testing, security, front-end UX, code quality,
-   performance). Apply `principle-demo` when the user asked for a mock-up.
-3. Respect opt-outs in `weave.md` for Supabase, Clerk, Vercel, and Lattice
-   Design. Do not impose our stack on tools they turned off.
-4. Use task skills when the work matches: Lattice stack setup, Lattice Design,
-   UI variants.
+1. Read root `weave.md` if it exists.
+2. Follow its component instructions, boundaries, notes, task protocol, risk
+   rules, verification methods, and definition of done.
+3. Apply all always-on principles. Apply `principle-demo` when the user asks
+   for a mock-up.
+4. Respect any existing opt-outs for Supabase, Clerk, Vercel, and Lattice
+   Design.
+5. Use task skills when the work matches: Lattice stack setup, Lattice Design,
+   and UI variants.
+6. Never report work complete when its required verification cannot run.
+7. Never weaken an approved verification plan without human approval.
 
-## weave.md
+Regular feature agents must not edit `weave.md`. If it is stale or incorrect,
+propose a specific correction. Apply corrections only through `/setup-weave`
+after human approval.
 
-Short project config only: whose repo, opt-outs, a few facts the agent would
-miss. Not architecture docs. Run `/setup-weave` to create or update it. That
-command interviews for every field before it writes.
-
-## Repo types
-
-**Lattice-owned** — apply our full stack unless opted out in `weave.md`.
-
-**Client existing** — adapt to their conventions for existing code. No mass
-reformat. Hold new code you write to the Lattice bar. Augment existing
-`AGENTS.md` with a marked section; never overwrite.
-
-## Enforcement
-
-Weave does not run at `git commit` time. Use `/review-weave` before shipping for
-a manual audit. Agents may commit and push when work is ready. Never
-`--force`, `--no-verify`, or `--skip-checks`. Never commit secrets or `.env`
-files.
-
-## When unsure
-
-Ask on business logic, UX choices, third-party selection, real user data, money,
-or security. A wrong assumption that ships is harder to undo than a question.
+If `weave.md` is missing, say so. Apply Lattice principles and defaults, but
+do not invent repository-specific commands, permissions, or verification
+methods.

@@ -4,13 +4,13 @@
     "name": "Lattice"
   },
   "metadata": {
-    "description": "Private Lattice marketplace. Weave is the Cursor engineering-standards plugin."
+    "description": "Private Lattice marketplace for trusted agent work."
   },
   "plugins": [
     {
       "name": "weave",
       "source": "./plugins/weave",
-      "description": "Lattice engineering standards: rules, skills, and commands."
+      "description": "Lattice trust contracts, verification guidance, skills, and commands."
     }
   ]
 }
