@@ -23,15 +23,8 @@ const EXPECTED_COMMANDS = [
   'utility-weave-improvements',
 ]
 const COMMAND_SECTIONS = ['Preflight', 'Plan', 'Commands', 'Verification', 'Summary']
-const TEMPLATE_SECTIONS = [
-  'Components',
-  'Shared prerequisites',
-  'Boundaries',
-  'Notes',
-  'Task protocol',
-  'Risk',
-  'Definition of done',
-]
+const TEMPLATE_SECTIONS = ['Configuration', 'Approved exceptions and notes']
+const EXPECTED_RULES = ['engineering-process.mdc']
 
 function readJson(path) {
   return JSON.parse(fs.readFileSync(path, 'utf8'))
@@ -110,12 +103,16 @@ export function validateWeave() {
     fail('marketplace source must be ./plugins/weave')
   }
 
-  for (const key of ['skills', 'commands']) {
+  for (const key of ['skills', 'commands', 'rules']) {
     const rel = plugin[key]
     if (!rel || !fs.existsSync(join(PLUGIN_ROOT, rel))) fail(`plugin.json ${key} path missing`)
   }
-  if (plugin.rules) {
-    fail('plugin.json must not declare rules; use principle-* skills instead')
+  const rules = listFiles(join(PLUGIN_ROOT, 'rules'), '.mdc')
+  if (!sameNames(rules, EXPECTED_RULES)) fail(`rules mismatch: ${rules.join(', ')}`)
+  for (const file of rules) {
+    const fm = frontmatter(read(join(PLUGIN_ROOT, 'rules', file)))
+    if (!fm.description) fail(`${file} missing description`)
+    if (fm.alwaysApply !== 'true') fail(`${file} must set alwaysApply: true`)
   }
 
   if (!fs.existsSync(join(PLUGIN_ROOT, 'templates/weave.md'))) {
@@ -140,6 +137,7 @@ export function validateWeave() {
     const fm = frontmatter(read(path))
     if (fm.name !== name) fail(`${name} skill name frontmatter is ${fm.name}`)
     if (!fm.description) fail(`${name} skill missing description`)
+    if ('alwaysApply' in fm) fail(`${name} skill has unsupported alwaysApply`)
   }
 
   const commands = listFiles(join(PLUGIN_ROOT, 'commands'), '.md').filter(

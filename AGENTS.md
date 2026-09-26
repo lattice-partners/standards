@@ -4,7 +4,8 @@ This repository **is** the Weave Cursor plugin. There is no CLI and no `core/`.
 
 ## Changing the standard
 
-- Edit always-on standards in `plugins/weave/skills/principle-*/SKILL.md`.
+- Edit the required workflow in `plugins/weave/rules/engineering-process.mdc`.
+- Edit conditional principles in `plugins/weave/skills/principle-*/SKILL.md`.
 - Edit task skills in `plugins/weave/skills/*/SKILL.md` (non-`principle-*`).
 - Edit commands in `plugins/weave/commands/`.
 - Per-project config shape: `plugins/weave/templates/weave.md`.

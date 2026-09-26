@@ -1,8 +1,8 @@
 {
   "name": "weave",
   "displayName": "Weave",
-  "version": "2.0.1",
-  "description": "Lattice trust contracts, engineering standards, skills, and commands for reliable agent work.",
+  "version": "2.1.0",
+  "description": "Lattice engineering workflow, project configuration, skills, and commands for reliable agent work.",
   "author": {
     "name": "Lattice"
   },
@@ -20,5 +20,6 @@
     "cursor": "1.7.0"
   },
   "skills": "skills",
-  "commands": "commands"
+  "commands": "commands",
+  "rules": "rules"
 }

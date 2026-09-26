@@ -1,0 +1,59 @@
+---
+description: Required process for repository-changing work
+alwaysApply: true
+---
+
+When changing repository files:
+
+1. Read root `AGENTS.md` and `weave.md` when present. Treat `weave.md` as
+   approved project configuration. Do not edit it outside `/setup-weave` or an
+   explicitly approved configuration change.
+2. Before implementation, state observable acceptance criteria, classify risk,
+   and say how each criterion will be verified. Use relevant skills for the
+   change. If a listed method cannot demonstrate the result, propose a better
+   method before relying on it.
+3. Get human approval before implementing high-risk work.
+4. After implementation, check the final state. Connect each acceptance
+   criterion to an observed result and evidence. Include relevant failure,
+   edge, regression, and bypass checks based on the change and its risk.
+5. Report failed, skipped, unavailable, and flaky checks. Do not claim work is
+   complete when required verification fails or cannot run.
+
+Risk measures the consequence of being wrong and the difficulty of verifying
+the result, not the size of the diff. Use the highest applicable level. If
+uncertain, raise it one level:
+
+- Low: isolated, reversible, established verification, and no protected system
+  or user impact.
+- Medium: may affect users or multiple components, verification is uncertain,
+  or the change is difficult to reverse.
+- High: touches production data, access control, secrets, money, external
+  communications, destructive actions, or irreversible infrastructure.
+
+Choose evidence that directly demonstrates the change:
+
+- Visual UI: before and after screenshots.
+- Animation or interaction: video.
+- Backend or API: requests, responses, logs, and relevant tests.
+- Authorization or security: allowed and denied cases.
+- Agent behavior: transcripts for the intended trigger and bypass attempts.
+- Data or migration: dry run, before and after state, and rollback evidence
+  when applicable.
+- Performance: before and after measurements.
+- Refactor: automated tests demonstrating unchanged behavior.
+
+Lint, typecheck, and build results can support evidence but do not alone prove
+a behavioral change.
+
+End repository-changing work with a concise handoff:
+
+```text
+Status: ready for human review | partial | failed | blocked
+Risk: low | medium | high
+Acceptance criteria: each criterion, observed result, and evidence
+Checks: verified, failed, blocked, or not applicable with reasons
+Human review: what to inspect manually
+```
+
+Use `ready for human review` only when the required checks pass. Never weaken
+the declared verification without human approval.

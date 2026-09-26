@@ -1,7 +1,6 @@
 ---
 name: principle-demo
 description: Clickable mock-up pages with session-only data and multiple user flows. No real database. Applies when the user asks for a demo or mock-up.
-alwaysApply: true
 ---
 
 # Demo

@@ -1,7 +1,6 @@
 ---
 name: principle-performance
 description: Lattice performance expectations. Cannot be opted out in weave.md.
-alwaysApply: true
 ---
 
 # Performance

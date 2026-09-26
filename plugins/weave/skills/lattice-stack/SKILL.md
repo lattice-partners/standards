@@ -1,11 +1,11 @@
 ---
 name: lattice-stack
-description: How to set up the typical Lattice stack (Supabase, Clerk, Vercel). Use when standing up or extending stack pieces the project has not opted out of.
+description: Set up or extend the Lattice stack when lattice.stack is true for the component in weave.md.
 ---
 
 # Lattice stack
 
-Skip this skill when `weave.md` opted out of the relevant tool, and when
+Use when `lattice.stack` is `true` for the component in `weave.md`. Skip when
 `principle-demo` applies (mock-up pages, no live database).
 
 ## Setup

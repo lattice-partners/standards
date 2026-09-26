@@ -1,12 +1,12 @@
 ---
 name: lattice-design
-description: Lattice Design — UI system on Tailwind CSS v4 (tokens, shell, typography, surfaces). Skip when weave.md opted out of lattice-design.
+description: Lattice Design UI system on Tailwind CSS v4. Use when lattice.design is true for the component in weave.md.
 ---
 
 # Lattice Design
 
-Skip when `weave.md` opted out of `lattice-design`. Interaction, copy, and
-states: `principle-frontend-ux` (always on).
+Use when `lattice.design` is `true` for the component in `weave.md`.
+Interaction, copy, and states: `principle-frontend-ux` when relevant.
 
 ## CSS
 

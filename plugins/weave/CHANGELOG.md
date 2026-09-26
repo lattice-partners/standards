@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0
+
+Add one required engineering process rule with risk classification, change-based
+verification, and evidence for human review. Reduce `weave.md` to component
+settings and explicit Lattice Design and Stack flags. Simplify `/setup-weave`
+and its managed `AGENTS.md` reference block. Remove unsupported `alwaysApply`
+frontmatter from skills while retaining the existing skill set.
+
 ## 2.0.1
 
 `principle-frontend-ux` and `lattice-design`: wizard modals use header Back and Close, footer Cancel plus one primary, and progressive disclosure.

@@ -1,7 +1,6 @@
 ---
 name: principle-frontend-ux
 description: Front-end UX (edit flows, lists, states, copy, motion policy). Always on; not the visual design system.
-alwaysApply: true
 ---
 
 # Front-end UX
