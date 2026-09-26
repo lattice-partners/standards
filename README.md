@@ -1,8 +1,8 @@
 # Weave
 
-Weave helps agents earn trust through repeatable, evidence-based verification.
+Weave guides a repeatable engineering process with evidence for human review.
 Install the Cursor plugin and run `/setup-weave` on an existing repository to
-create its confirmed `weave.md` trust contract.
+create its approved `weave.md` configuration.
 
 No npm install into client repos. No CLI. No vendored `.lattice/` folder.
 
@@ -40,11 +40,12 @@ Until then, iterate locally only. A marketplace install of the same name
 
 | Piece | Purpose |
 | --- | --- |
-| **Principles** | Always used: trust contract, suggested stack, testing, UX, quality, security, performance, and demo guidance |
+| **Rule** | Required acceptance criteria, risk, verification, and evidence handoff |
+| **Principles** | Conditional stack, testing, UX, quality, security, performance, and demo guidance |
 | **Lattice** | Existing stack setup and Lattice Design skills |
 | **Utility** | Focused tasks such as the UI options toggle |
-| **Commands** | `/setup-weave` creates the trust contract; review and improvement commands remain available |
-| **`weave.md`** | Components, verified methods, evidence, boundaries, notes, risk, and definition of done |
+| **Commands** | `/setup-weave` creates project configuration; `/review-weave` is paused pending an update |
+| **`weave.md`** | Components, language, framework, hosting, Lattice flags, and approved exceptions |
 
 ## Per-project setup
 
@@ -52,11 +53,11 @@ On a client or Lattice repo:
 
 1. Install Weave in Cursor.
 2. Run `/setup-weave` on an existing repository.
-3. Confirm the component inventory, verified commands, boundaries, and notes.
+3. Confirm component settings and explicit Lattice Design and Stack flags.
 4. Review the proposed `weave.md` and root `AGENTS.md` block before writing.
 
 New-project setup is intentionally out of scope for this release. Existing
-skills remain available while the trust-contract workflow is piloted.
+skills remain available while the new workflow is piloted.
 
 ## Change the plugin
 

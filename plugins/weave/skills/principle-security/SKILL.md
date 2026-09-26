@@ -1,7 +1,6 @@
 ---
 name: principle-security
 description: Lattice security expectations. Cannot be opted out in weave.md.
-alwaysApply: true
 ---
 
 # Security

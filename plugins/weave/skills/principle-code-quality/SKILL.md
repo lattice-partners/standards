@@ -1,7 +1,6 @@
 ---
 name: principle-code-quality
 description: Lattice code quality expectations. Cannot be opted out in weave.md.
-alwaysApply: true
 ---
 
 # Code quality

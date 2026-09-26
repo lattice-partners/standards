@@ -4,6 +4,10 @@ description: Manual audit — compare the repo to Weave principles and this proj
 
 # Review Weave
 
+This command has not been adapted to the Weave 2.1 configuration schema.
+Stop here and tell the human that `/review-weave` is deferred. Do not produce
+an approval verdict from the legacy checklist below.
+
 Read-only alignment check against Weave principle skills and the project
 `weave.md`.
 

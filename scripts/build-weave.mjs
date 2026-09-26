@@ -45,9 +45,7 @@ export function checkPrinciples() {
       const fm = frontmatter(markdown)
       if (fm.name !== name) problems.push(`${name} skill name frontmatter is ${fm.name}`)
       if (!fm.description) problems.push(`${name} missing description`)
-      if (fm.alwaysApply !== 'true') {
-        problems.push(`${name} must set alwaysApply: true`)
-      }
+      if ('alwaysApply' in fm) problems.push(`${name} skill has unsupported alwaysApply`)
     } catch (err) {
       problems.push(`${name}: ${err.message}`)
     }
